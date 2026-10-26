@@ -14,7 +14,6 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 
-# Browser headers so servers NEVER block GitHub Actions
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -24,58 +23,79 @@ HEADERS = {
 USED_TOPICS_FILE = "used_topics.json"
 
 ALL_TOPICS = [
-    {"topic": "70cc aur 125cc bike mein petrol average barhane wale Carburetor mistri ka choona aur Bernoulli Principle", "keywords": ["motorcycle engine", "mechanic repair", "fuel pump", "motorbike"]},
-    {"topic": "Inverter AC ko 16 degree par chalane ka nuqsan, bijli ka bhari bill aur Thermodynamics", "keywords": ["air conditioner", "electricity meter", "summer heat", "money bills"]},
-    {"topic": "Fridge ki gas har saal khatam hone ka mistri scam aur Closed Loop Thermodynamics", "keywords": ["refrigerator kitchen", "repairman tools", "ice cooling", "wallet cash"]},
-    {"topic": "Gaadi aur bike ke tyre mein hawa kam rakhne ka nuqsan, petrol ki tabahi aur Rolling Friction", "keywords": ["car tire pressure", "asphalt road", "petrol station", "car wheel"]},
-    {"topic": "Solar panels par mitti jamne se 40% bijli gayab hone ki haqeeqat aur Photoelectric Effect", "keywords": ["solar panels roof", "sunlight energy", "dust storm", "battery inverter"]},
-    {"topic": "Gaadi ke radiator mein saada paani dalne se engine seize hone ka choona aur Boiling Point Elevation", "keywords": ["car hood smoke", "engine coolant", "auto mechanic", "boiling water"]},
-    {"topic": "Fake 20,000 mAh Power Bank ka dhanda aur Lithium Ion Energy Density ki physics", "keywords": ["powerbank charging", "lithium battery", "electronics market", "smartphone"]},
-    {"topic": "Sardi mein geyser ka bill double aane ki waja aur Thermal Insulation ka desi jugaar", "keywords": ["water heater", "winter cold", "gas flame", "plumber pipe"]},
-    {"topic": "Mehngay Engine Flush aur Fuel Injector cleaner ka scam vs Fluid Detergency", "keywords": ["motor oil pouring", "car engine pistons", "auto parts shop", "cash money"]},
-    {"topic": "UPS ki tubular battery jaldi kharab hone ka raaz aur Lead Acid Sulfation", "keywords": ["car battery acid", "power outage dark", "electrician wires", "sparks"]},
-    {"topic": "3-Pin Plug mein Earth wire na lagane ki Pakistani ghalti aur AC Current Grounding", "keywords": ["electric socket plug", "electrical sparks", "house wiring", "shock"]},
-    {"topic": "Microfiber kapray ki jagah purani banyan se gaadi saaf karne ka nuqsan aur Abrasion Physics", "keywords": ["washing car", "scratched paint", "luxury car shine", "auto detailing"]},
-    {"topic": "Pressure Cooker ki seeti aur paharon par daal na galne ka raaz: Atmospheric Pressure", "keywords": ["cooking pot steam", "kitchen fire", "mountains clouds", "boiling food"]},
-    {"topic": "LED Bulbs ke har 6 mahine baad jalne ka scam aur Heat Sink Thermal Dissipation", "keywords": ["light bulb glowing", "circuit board", "electric shop", "dark room"]},
-    {"topic": "Bike ke silencer mein patakhay marne se engine valves tootne ki physics: Backpressure", "keywords": ["motorcycle exhaust fire", "biker street", "broken engine", "mechanic"]}
-]
-
-SYSTEM_PROMPT = """
-You are Pakistan's top viral infotainment video creator (like ZemTV meets funny Desi street smarts).
-Write a hilarious, high-energy, 60-second vertical video script (10 scenes) on the given topic.
-
-Structure:
-- Scenes 1-2: THE HOOK (Shocking financial "choona" + funny Desi observation + Physics twist).
-- Scenes 3-5: THE SCIENCE / REAL STORY (How the physics law actually works in real life with vivid examples).
-- Scenes 6-8: THE POCKET IMPACT (How local "ustaad", mechanics, or shopkeepers fool people and cost them 10,000+ rupees).
-- Scenes 9-10: THE MORAL & PUNCHY CTA ("Physics koi ratta nahi, dunya ka Source Code hai! Follow daba do!").
-
-STRICT RULES:
-1. "tts_urdu": MUST be in PROPER URDU SCRIPT (اردو رسم الخط) using natural, conversational, witty Pakistani spoken Urdu. Transliterate English words into Urdu script (e.g. مکینک، انجن، فزکس، بیٹری، وولٹیج) so the Urdu voice pronounces them smoothly. Each scene MUST be 14 to 18 words long.
-2. "caption_part1": First half of the punchline in Roman Urdu (3 to 4 words, ALL CAPS).
-3. "caption_part2": Second half of the punchline in Roman Urdu (3 to 4 words, ALL CAPS).
-4. "search_query_1": A 2-to-3 word English search query for a REAL stock photo/video for the first 3 seconds (e.g. "car mechanic engine", "burning electric wire", "counting money cash").
-5. "search_query_2": A DIFFERENT 2-to-3 word English search query for the second 3 seconds (e.g. "broken smartphone screen", "petrol pump nozzle", "scientist laboratory").
-6. "video_keyword": Single English category word for stock video search (choose from: "car", "mechanic", "phone", "money", "electricity", "fire", "water", "technology", "engine", "traffic", "tools", "battery").
-
-Return ONLY valid raw JSON in this exact format:
-{
-  "title": "Catchy Roman Urdu Title",
-  "hashtags": "#PhysicsLogic #DesiScam #UrduFacts #ReelsPakistan",
-  "category_badge": "PHYSICS VS CHOONA",
-  "scenes": [
     {
-      "tts_urdu": "اردو رسم الخط میں قدرتی اور مزیدار جملہ۔",
-      "caption_part1": "HAR 2 MAHINE BAAD",
-      "caption_part2": "10,000 KA CHOONA?!",
-      "search_query_1": "auto mechanic smiling",
-      "search_query_2": "pouring engine oil",
-      "video_keyword": "mechanic"
+        "topic": "LED Bulbs ke har 6 mahine baad jalne ka scam aur Heat Sink Physics",
+        "badge": "LED BULB SCAM",
+        "scientist_story": "انیس سو اکسٹھ میں جب رابرٹ بائرڈ نے ایل ای ڈی ایجاد کی تو سائنسدانوں کا خیال تھا کہ یہ بلب پچاس سال تک نہیں جلے گا، مگر آج کا لوکل بلب چھ مہینے بھی نہیں نکالتا!",
+        "science_fact": "تھرمل ڈسی پیشن یعنی ہیٹ سنک کی فزکس کہتی ہے کہ ایل ای ڈی کی چپ جتنی ٹھنڈی رہے گی اتنی لمبی چلے گی۔ اصلی بلب کے اندر ایلومینیم کی موٹی پلیٹ ہوتی ہے جو گرمی باہر پھینکتی ہے۔",
+        "scam_detail": "مگر سستے لوکل بلب بنانے والے اندر سے ایلومینیم غائب کر کے خالی پلاسٹک لگا دیتے ہیں تاکہ بلب کی گرمی اندر ہی قید ہو جائے اور آپ ہر تیسرے مہینے نیا بلب خریدیں!",
+        "keywords": ["light bulb glowing", "electronic circuit board", "electrician repair", "counting money cash"],
+        "vid_kw": "electricity"
+    },
+    {
+        "topic": "70cc aur 125cc bike mein petrol average barhane wale Carburetor mistri ka choona",
+        "badge": "BIKE PETROL SCAM",
+        "scientist_story": "سترہ سو اڑتیس میں سوئس سائنسدان ڈینیئل برنولی نے فلوئڈ ڈائنامکس کا وہ اصول بنایا جس پر آج آپ کی بائیک کا کاربوریٹر اور ہوائی جہاز کے انجن چلتے ہیں!",
+        "science_fact": "برنولی پرنسپل کے مطابق پٹرول کو مکمل جلنے کے لیے چودہ اعشاریہ سات حصے ہوا اور ایک حصہ پٹرول کا پرفیکٹ بیلنس چاہیے ہوتا ہے جسے سٹوكیومیٹرک ریشو کہتے ہیں۔",
+        "scam_detail": "مگر جب محلے کا استاد پیچ کس گھما کر کاربوریٹر کا جیٹ ضرورت سے زیادہ بند کرتا ہے تو پٹرول بچنے کے بجائے انجن اوور ہیٹ ہوتا ہے اور دو مہینے بعد والوز اور پسٹن کا دس ہزار کا خرچہ نکل آتا ہے!",
+        "keywords": ["motorcycle engine", "auto mechanic tools", "petrol pump fuel", "broken engine piston"],
+        "vid_kw": "mechanic"
+    },
+    {
+        "topic": "Inverter AC ko 16 degree par chalane ka nuqsan aur Thermodynamics ka qanoon",
+        "badge": "AC BILL CHOONA",
+        "scientist_story": "اٹھارہ سو چوبیس میں فرانسیسی انجینئر سادی کارنو نے تھرمو ڈائنامکس کا وہ قانون دریافت کیا جس سے آج دنیا کے تمام اے سی اور فریج ٹھنڈک پیدا کرتے ہیں!",
+        "science_fact": "فزکس کہتی ہے کہ اے سی سولہ ڈگری کرنے سے کمرہ جلدی ٹھنڈا نہیں ہوتا، کیونکہ اے سی کی نالیوں سے نکلنے والی ہوا کا درجہ حرارت ہمیشہ ایک جیسا رہتا ہے، صرف کمپریسر کی محنت بدلتی ہے۔",
+        "scam_detail": "جب آپ ریموٹ سولہ پر رکھتے ہیں تو انورٹر اے سی کا سینسر سمجھتا ہے کہ کمرے کو شملہ بنانا ہے، کمپریسر کبھی سلو نہیں ہوتا اور مہینے کے آخر میں پچاس ہزار کا بل آپ کے ہوش اڑا دیتا ہے!",
+        "keywords": ["air conditioner room", "electricity meter", "summer heat sweat", "shocked man bill"],
+        "vid_kw": "technology"
+    },
+    {
+        "topic": "Fridge ki gas har saal khatam hone ka mistri scam aur Closed Loop Physics",
+        "badge": "FRIDGE GAS SCAM",
+        "scientist_story": "انیس سو تیس میں جب فریون گیس دریافت ہوئی تو انجینئرز نے فریج کے کمپریسر کو ایک مکمل سیل بند کلوزڈ لوپ سسٹم بنایا جس میں سے گیس کبھی خود ختم ہو ہی نہیں سکتی!",
+        "science_fact": "آئیڈیل گیس لا کے مطابق فریج کی گیس پٹرول کی طرح جلتی نہیں ہے، بلکہ وہ صرف مائع سے گیس اور گیس سے مائع بن کر بیس سال تک انہی پائپوں میں گھومتی رہتی ہے۔",
+        "scam_detail": "اکثر گرمیوں میں صرف دو سو روپے کا ریلے یا کیپیسٹر خراب ہوتا ہے، مگر کاریگر آ کر کہتا ہے باجی گیس اڑ گئی ہے اور بغیر لیکج چیک کیے پانچ ہزار روپے جیب میں ڈال لیتا ہے!",
+        "keywords": ["refrigerator kitchen", "repairman tools", "cold ice cubes", "handing cash money"],
+        "vid_kw": "tools"
+    },
+    {
+        "topic": "Gaadi ke radiator mein saada paani dalne se engine tabah hone ki physics",
+        "badge": "RADIATOR SCAM",
+        "scientist_story": "اٹھارہ سو چھیاسی میں فرانسیسی کیمسٹ فرانسوا راؤلٹ نے ثابت کیا کہ خالص پانی میں خاص کیمیکل ملانے سے اس کا ابلنے کا پوائنٹ حیرت انگیز طور پر بڑھ جاتا ہے!",
+        "science_fact": "سادہ نلکے کا پانی سو ڈگری پر ابل کر بھاپ بن جاتا ہے اور لوہے کے انجن کو اندر سے زنگ لگا دیتا ہے، جبکہ اصلی کولنٹ ایک سو تیس ڈگری تک انجن کو ٹھنڈا اور محفوظ رکھتا ہے۔",
+        "scam_detail": "پٹرول پمپ اور ورکشاپ والے کہتے ہیں استاد جی سادہ پانی ڈالو سب چلتا ہے، اور چھ مہینے بعد جب زنگ سے ریڈی ایٹر چوک ہوتا ہے تو ہیڈ گیسکٹ جلنے کا چالیس ہزار کا بل بن جاتا ہے!",
+        "keywords": ["car hood smoke", "pouring engine coolant", "rusty metal pipe", "auto repair garage"],
+        "vid_kw": "car"
+    },
+    {
+        "topic": "Solar panels par mitti jamne se 40% bijli gayab hone ka raaz aur Photoelectric Effect",
+        "badge": "SOLAR PANEL LOGIC",
+        "scientist_story": "انیس سو پانچ میں البرٹ آئن سٹائن نے فوٹو الیکٹرک ایفیکٹ دریافت کیا جس پر انہیں نوبل پرائز ملا، اور آج آپ کی چھت پر لگا سولر پینل اسی اصول پر دھوپ سے بجلی بناتا ہے!",
+        "science_fact": "فزکس کے مطابق سولر پلیٹ کے سیلز سیریز میں جڑے ہوتے ہیں۔ اگر ایک کونے پر بھی مٹی یا پرندے کی بیٹ جم جائے تو وہ پورا سیل لوڈ بن کر باقی پلیٹ کی تیس فیصد بجلی کھا جاتا ہے۔",
+        "scam_detail": "لوگ لاکھوں روپے کا سولر لگوا کر چھ مہینے کپڑا تک نہیں مارتے، اور پھر شکایت کرتے ہیں کہ سولر والا دھوکہ دے گیا، حالانکہ قصور صرف پانچ منٹ کی صفائی نہ کرنے کا ہوتا ہے!",
+        "keywords": ["solar panels roof", "bright sunlight sky", "cleaning glass water", "inverter battery"],
+        "vid_kw": "technology"
+    },
+    {
+        "topic": "Tyre mein hawa kam rakhne ka desi jugaar, petrol ki tabahi aur Rolling Friction",
+        "badge": "TYRE PRESSURE LOGIC",
+        "scientist_story": "سترہ سو ننانوے میں چارلس کولمب نے رگڑ یعنی فریکشن کے قوانین پیش کیے جن سے پتہ چلا کہ زمین اور پہیے کا ملاپ آپ کی گاڑی کی رفتار اور پٹرول کا فیصلہ کرتا ہے!",
+        "science_fact": "جب ٹائر میں ہوا صرف پانچ پوائنٹ کم ہوتی ہے تو رولنگ ریزسٹنس بڑھ جاتی ہے۔ ٹائر سڑک کے ساتھ چپک کر چلتا ہے جس سے انجن کو پندرہ فیصد زیادہ پٹرول پھونکنا پڑتا ہے۔",
+        "scam_detail": "ٹائر والا کہتا ہے بھائی ہوا کم رکھو جھٹکے نہیں لگیں گے، مگر اس سستے آرام کے چکر میں ہر مہینے ہزاروں کا اضافی پٹرول جلتا ہے اور ٹائر کی سائیڈ کی تاریں وقت سے پہلے ٹوٹ جاتی ہیں!",
+        "keywords": ["car tire pressure", "asphalt highway road", "petrol station nozzle", "car wheel closeup"],
+        "vid_kw": "traffic"
+    },
+    {
+        "topic": "Fake 20,000 mAh Power Bank ka dhanda aur Lithium Ion Energy Density",
+        "badge": "POWERBANK SCAM",
+        "scientist_story": "انیس سو اسی کی دہائی میں جان گڈ اینف نے لیتھیم آئن بیٹری ایجاد کی جس نے پوری دنیا کے موبائل فونز کو جیب میں رکھنا ممکن بنایا!",
+        "science_fact": "انرجی ڈینسٹی کی فزکس کہتی ہے کہ بیس ہزار ایم اے ایچ کی توانائی سٹور کرنے کے لیے خالص لیتھیم سیلز کا ایک خاص وزن اور حجم ہونا لازمی ہے جس کی قیمت کبھی ہزار روپے نہیں ہو سکتی۔",
+        "scam_detail": "مارکیٹ میں ملنے والے سستے پاور بینک کھولو تو اندر صرف ایک چھوٹا سا سیل لگا ہوتا ہے اور باقی ڈبے میں وزن بڑھانے کے لیے ریت یا لوہے کی پتریاں بھری ہوتی ہیں!",
+        "keywords": ["powerbank charging phone", "lithium battery cells", "electronics market shop", "broken gadget repair"],
+        "vid_kw": "phone"
     }
-  ]
-}
-"""
+]
 
 def pick_unused_topic():
     used = []
@@ -97,154 +117,100 @@ def pick_unused_topic():
         json.dump(used, f, indent=2)
     return chosen
 
-def clean_json(raw_text):
-    text = raw_text.strip()
-    if "```json" in text:
-        text = text.split("```json")[1].split("```")[0].strip()
-    elif "```" in text:
-        text = text.split("```")[1].split("```")[0].strip()
-    start = text.find("{")
-    end = text.rfind("}") + 1
-    if start == -1 or end <= 0:
-        raise ValueError("No JSON object found")
-    data = json.loads(text[start:end])
-    if "scenes" in data and len(data["scenes"]) >= 8:
-        return data
-    raise ValueError("Too few scenes")
-
 def generate_script_data():
     chosen = pick_unused_topic()
-    topic_str = chosen["topic"]
-    print(f"🔥 Today's Fresh Topic: {topic_str}")
+    print(f"🔥 Today's Fresh Topic: {chosen['topic']}")
+    return build_rich_script_for_topic(chosen)
 
-    user_msg = f"Write a fresh, hilarious 10-scene 60-second script on: '{topic_str}'. Random Seed: {random.randint(10000,99999)}. Return ONLY valid JSON."
-
-    # 1. Try Pollinations OpenAI Endpoint with Browser User-Agent
-    for model_name in ["openai", "openai-large", "mistral"]:
-        try:
-            print(f"Requesting AI Script via model '{model_name}'...")
-            resp = requests.post(
-                "https://text.pollinations.ai/openai",
-                headers={**HEADERS, "Content-Type": "application/json"},
-                json={
-                    "model": model_name,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_msg}
-                    ],
-                    "temperature": 0.9,
-                    "seed": random.randint(1, 999999)
-                },
-                timeout=65
-            )
-            if resp.status_code == 200:
-                res_json = resp.json()
-                content = res_json["choices"][0]["message"]["content"]
-                return clean_json(content)
-        except Exception as e:
-            print(f"Model {model_name} attempt failed: {e}")
-
-    # 2. Try Direct GET Pollinations Endpoint with Browser Headers
-    try:
-        print("Trying direct GET AI endpoint...")
-        encoded = urllib.parse.quote(f"{SYSTEM_PROMPT}\n\n{user_msg}")
-        url = f"https://text.pollinations.ai/{encoded}?model=openai&seed={random.randint(1,99999)}&json=true"
-        resp = requests.get(url, headers=HEADERS, timeout=60)
-        if resp.status_code == 200:
-            return clean_json(resp.text)
-    except Exception as e:
-        print(f"GET endpoint error: {e}")
-
-    # 3. Dynamic Topic-Specific Script Builder (Never repeats!)
-    print("Building dynamic topic script...")
-    return build_dynamic_script_for_topic(chosen)
-
-def build_dynamic_script_for_topic(chosen):
+def build_rich_script_for_topic(chosen):
     topic = chosen["topic"]
     kw = chosen["keywords"]
+    v_kw = chosen["vid_kw"]
+    badge = chosen["badge"]
+
     return {
-        "title": topic.split(" aur ")[0] + " Ka Asli Sach!",
+        "title": f"{topic} - Asli Physics!",
         "hashtags": "#PhysicsLogic #DesiScam #PakistaniReels #ScienceUrdu #DimaagKholo",
-        "category_badge": "USTAAD VS PHYSICS",
+        "category_badge": badge,
         "scenes": [
             {
-                "tts_urdu": f"کیا آپ جانتے ہیں کہ ہر مہینے آپ کی جیب سے ہزاروں روپے کیسے نکالے جاتے ہیں؟ اور قصور آپ کی فزکس نہ جاننے کا ہے!",
-                "caption_part1": "HAR MAHINE JEB SE",
-                "caption_part2": "HAZAROON GAYAB?!",
+                "tts_urdu": "ہر دو مہینے بعد آپ کی جیب سے ہزاروں روپے کیسے نکالے جاتے ہیں؟ اور حیرت کی بات یہ ہے کہ اس میں غلطی کاریگر کی نہیں، آپ کی فزکس کی ہے!",
+                "caption_part1": "HAR 2 MAHINE BAAD",
+                "caption_part2": "HAZAROON KA CHOONA?!",
                 "search_query_1": kw[0],
                 "search_query_2": "counting money cash",
-                "video_keyword": "money"
+                "video_keyword": v_kw
             },
             {
-                "tts_urdu": f"آج ہم بات کریں گے سب سے بڑے دیسی دھوکے کی، یعنی {topic} کے پیچھے چھپی اصلی سائنس کی!",
-                "caption_part1": "DESI JUGAAR KA",
-                "caption_part2": "SABSE BADA SCAM!",
+                "tts_urdu": chosen["scientist_story"],
+                "caption_part1": "SCIENCE KI ASLI",
+                "caption_part2": "KAHANI SUNO!",
+                "search_query_1": "scientist laboratory physics",
+                "search_query_2": kw[1],
+                "video_keyword": "technology"
+            },
+            {
+                "tts_urdu": chosen["science_fact"],
+                "caption_part1": "YAHAN CHALTI HAI",
+                "caption_part2": "PURE PHYSICS!",
                 "search_query_1": kw[1],
+                "search_query_2": "engineering machine closeup",
+                "video_keyword": "electricity"
+            },
+            {
+                "tts_urdu": "جب تک کسی مشین یا سرکٹ میں توانائی اور حرارت کا قدرتی توازن برقرار رہتا ہے، وہ سالوں سال بغیر کسی خرچے کے مکھن کی طرح چلتی ہے۔",
+                "caption_part1": "JAB TAK BALANCE HAI",
+                "caption_part2": "TAB TAK BACHAT HAI!",
+                "search_query_1": kw[2],
+                "search_query_2": kw[0],
+                "video_keyword": v_kw
+            },
+            {
+                "tts_urdu": chosen["scam_detail"],
+                "caption_part1": "AUR YAHAN HOTA HAI",
+                "caption_part2": "SABSE BADA SCAM!",
+                "search_query_1": "mechanic repairman smiling",
                 "search_query_2": kw[2],
                 "video_keyword": "mechanic"
             },
             {
-                "tts_urdu": "ہمارے گلی محلے کے استاد اکثر ایک ایسا مشورہ دیتے ہیں جو سننے میں بڑا سستا لگتا ہے مگر اندر ہی اندر مشین تباہ کر دیتا ہے۔",
-                "caption_part1": "USTAAD KA SASTA",
-                "caption_part2": "MASHWARA = TABAHI!",
-                "search_query_1": "repairman tools workshop",
-                "search_query_2": kw[0],
+                "tts_urdu": "دکاندار یا استاد بڑے پیار سے کہتا ہے کہ بھائی جان یہ سستا جگاڑ لگا لو، سب چلتا ہے، اور آپ خوشی خوشی پیسے بچانے کے چکر میں پھنس جاتے ہو!",
+                "caption_part1": "USTAAD KI MEETHI BAAT",
+                "caption_part2": "AUR SASTA JUGAAR!",
+                "search_query_1": "workshop tools repair",
+                "search_query_2": kw[3],
                 "video_keyword": "tools"
             },
             {
-                "tts_urdu": "فزکس کا بنیادی قانون کہتا ہے کہ توانائی نہ خود بنتی ہے اور نہ غائب ہوتی ہے، بلکہ غلط جگاڑ سے سیدھا ہیٹ اور نقصان میں بدل جاتی ہے!",
-                "caption_part1": "ENERGY LOSS AUR",
-                "caption_part2": "PHYSICS KA QANOON!",
-                "search_query_1": "physics laboratory electricity",
-                "search_query_2": "thermal heat camera",
-                "video_keyword": "electricity"
-            },
-            {
-                "tts_urdu": "جب آپ سستے جگاڑ کے چکر میں سسٹم کا قدرتی پریشر یا بیلنس چھیڑتے ہیں تو مشین کو دو گنا زیادہ زور لگانا پڑتا ہے۔",
-                "caption_part1": "MACHINE PAR",
-                "caption_part2": "DO GUNA LOAD!",
-                "search_query_1": kw[2],
-                "search_query_2": "engine gears closeup",
-                "video_keyword": "engine"
-            },
-            {
-                "tts_urdu": "شروع کے دس دن تو آپ خوش ہوتے ہیں کہ پیسے بچ گئے، مگر اندر کے پرزے رگڑ کھا کھا کر پورے ختم ہو رہے ہوتے ہیں۔",
-                "caption_part1": "10 DIN KI KHUSHI",
-                "caption_part2": "ANDAR SE PURZAY KHATAM!",
-                "search_query_1": "broken metal gears",
+                "tts_urdu": "شروع کے چند ہفتے تو سب ٹھیک لگتا ہے، مگر اندر ہی اندر فزکس کا قانون اپنا کام دکھاتا ہے اور قیمتی پرزے گرم ہو کر جلنا شروع ہو جاتے ہیں۔",
+                "caption_part1": "CHAND HAFTE BAAD",
+                "caption_part2": "ANDAR SE TABAHI!",
+                "search_query_1": "sparks fire wires",
                 "search_query_2": kw[1],
-                "video_keyword": "car"
+                "video_keyword": "fire"
             },
             {
-                "tts_urdu": "پھر دو مہینے بعد جب آپ دوبارہ کاریگر کے پاس جاتے ہیں تو وہی استاد مسکرا کر دس ہزار روپے کا لمبا بل پکڑا دیتا ہے!",
-                "caption_part1": "2 MAHINE BAAD",
-                "caption_part2": "10,000 KA LAMBA BILL!",
-                "search_query_1": "stressed man bill",
-                "search_query_2": "auto repair shop",
+                "tts_urdu": "پھر جب آپ دوبارہ مارکیٹ جاتے ہو تو پانچ سو بچانے کے چکر میں سیدھا دس سے پندرہ ہزار روپے کا نیا خرچہ آپ کے ہاتھ میں تھما دیا جاتا ہے!",
+                "caption_part1": "500 BACHAYE THE,",
+                "caption_part2": "15,000 KA FATKA LAGA!",
+                "search_query_1": "stressed man holding head",
+                "search_query_2": "paying cash bill",
                 "video_keyword": "money"
             },
             {
-                "tts_urdu": "دنیا بھر کے انجینئرز کروڑوں ڈالر لگا کر جو ڈیزائن بناتے ہیں، ہمارا دیسی استاد ایک پیچ کس سے اس کا جنازہ نکال دیتا ہے۔",
-                "caption_part1": "ENGINEERS KI MEHNAT",
-                "caption_part2": "VS EK PECHKAS!",
-                "search_query_1": "engineer blueprint factory",
-                "search_query_2": "screwdriver repair",
-                "video_keyword": "technology"
+                "tts_urdu": "ایلون مسک کے راکٹ سے لے کر آپ کے گھر کی عام چیزوں تک، ہر جگہ فزکس کا یہی پکا حساب چلتا ہے جو کسی دیسی جگاڑ کو معاف نہیں کرتا۔",
+                "caption_part1": "ROCKET SE LE KAR",
+                "caption_part2": "APKE GHAR TAK!",
+                "search_query_1": "rocket launch fire",
+                "search_query_2": kw[0],
+                "video_keyword": "engine"
             },
             {
-                "tts_urdu": "اس لیے اگلی بار کسی کے سستے جگاڑ میں آنے سے پہلے فزکس کا حساب ضرور لگانا تاکہ آپ کی حلال کی کمائی محفوظ رہے۔",
-                "caption_part1": "JUGAAR CHORO,",
-                "caption_part2": "ASLI LOGIC SAMJHO!",
-                "search_query_1": kw[3],
-                "search_query_2": "smart man thinking",
-                "video_keyword": "traffic"
-            },
-            {
-                "tts_urdu": "فزکس کوئی بورنگ کتاب نہیں بلکہ اس دنیا کا سورس کوڈ ہے! روزانہ ایسی اصلی لاجک سیکھنے کے لیے ابھی فالو کا بٹن دبا دو!",
+                "tts_urdu": "فزکس کوئی بورڈ امتحان کا بورنگ نصاب نہیں بلکہ اس دنیا کا سورس کوڈ ہے! روزانہ ایسی اصلی لاجک سیکھنے کے لیے ابھی فالو کا بٹن دبا دو!",
                 "caption_part1": "DUNYA KA SOURCE CODE!",
-                "caption_part2": "ABHI FOLLOW KARO!",
-                "search_query_1": "futuristic technology hud",
-                "search_query_2": "social media smartphone",
+                "caption_part2": "ABHI FOLLOW DABAO!",
+                "search_query_1": "smartphone social media",
+                "search_query_2": "modern technology glow",
                 "video_keyword": "phone"
             }
         ]
@@ -253,14 +219,12 @@ def build_dynamic_script_for_topic(chosen):
 USED_MEDIA_URLS = set()
 
 def fetch_real_stock_video(keyword, filename):
-    """Downloads a REAL HD Stock Video MP4 from Mixkit (No API key needed)."""
     slug = urllib.parse.quote(keyword.lower().strip())
     search_url = f"https://mixkit.co/free-stock-video/{slug}/"
     try:
         resp = requests.get(search_url, headers=HEADERS, timeout=20)
         if resp.status_code == 200:
             mp4_urls = re.findall(r'https://assets\.mixkit\.co/videos/[^\s"\'<>]+\.mp4', resp.text)
-            # Filter unused URLs
             fresh_urls = [u for u in mp4_urls if u not in USED_MEDIA_URLS]
             if not fresh_urls and mp4_urls:
                 fresh_urls = mp4_urls
@@ -278,33 +242,9 @@ def fetch_real_stock_video(keyword, filename):
     return None
 
 def fetch_real_stock_photo(query, filename):
-    """Downloads a REAL Stock Photo from Unsplash NAPI or Bing Images HD (Zero purple/yellow fallbacks!)."""
-    # 1. Try Unsplash Public NAPI (High-Res Professional Photography)
+    # 1. Try Bing Images HD Search
     try:
-        encoded = urllib.parse.quote(query)
-        u_url = f"https://unsplash.com/napi/search/photos?query={encoded}&per_page=15&orientation=portrait"
-        r = requests.get(u_url, headers=HEADERS, timeout=20)
-        if r.status_code == 200:
-            results = r.json().get("results", [])
-            photo_urls = [item["urls"]["regular"] for item in results if "urls" in item and "regular" in item["urls"]]
-            fresh = [u for u in photo_urls if u not in USED_MEDIA_URLS]
-            if not fresh and photo_urls:
-                fresh = photo_urls
-            for img_url in fresh[:5]:
-                USED_MEDIA_URLS.add(img_url)
-                img_r = requests.get(img_url, headers=HEADERS, timeout=20)
-                if img_r.status_code == 200 and len(img_r.content) > 15000:
-                    with open(filename, "wb") as f:
-                        f.write(img_r.content)
-                    if verify_and_prepare_image(filename):
-                        print(f"  [✓] Downloaded Unsplash HD Photo for '{query}'")
-                        return filename
-    except Exception as e:
-        print(f"  [!] Unsplash search skip ({query}): {e}")
-
-    # 2. Try Bing Images Async HD Search (Finds exact real-world objects/scenes)
-    try:
-        encoded = urllib.parse.quote(f"{query} high quality photography")
+        encoded = urllib.parse.quote(f"{query} photography")
         b_url = f"https://www.bing.com/images/async?q={encoded}&first=1&count=20&adlt=off"
         r = requests.get(b_url, headers=HEADERS, timeout=20)
         if r.status_code == 200:
@@ -325,30 +265,41 @@ def fetch_real_stock_photo(query, filename):
     except Exception as e:
         print(f"  [!] Bing search skip ({query}): {e}")
 
-    # 3. Broad Unsplash fallback (e.g., "technology", "car", "money")
-    broad_url = f"https://unsplash.com/napi/search/photos?query=technology+mechanic&per_page=20"
-    r = requests.get(broad_url, headers=HEADERS, timeout=20)
-    results = r.json().get("results", [])
-    for item in results:
-        u = item["urls"]["regular"]
-        if u not in USED_MEDIA_URLS:
-            USED_MEDIA_URLS.add(u)
-            img_r = requests.get(u, headers=HEADERS, timeout=20)
-            with open(filename, "wb") as f:
-                f.write(img_r.content)
-            if verify_and_prepare_image(filename):
-                return filename
+    # 2. Try Unsplash Public NAPI
+    try:
+        encoded = urllib.parse.quote(query)
+        u_url = f"https://unsplash.com/napi/search/photos?query={encoded}&per_page=15"
+        r = requests.get(u_url, headers=HEADERS, timeout=20)
+        if r.status_code == 200:
+            results = r.json().get("results", [])
+            photo_urls = [item["urls"]["regular"] for item in results if "urls" in item and "regular" in item["urls"]]
+            fresh = [u for u in photo_urls if u not in USED_MEDIA_URLS]
+            if not fresh and photo_urls:
+                fresh = photo_urls
+            for img_url in fresh[:5]:
+                USED_MEDIA_URLS.add(img_url)
+                img_r = requests.get(img_url, headers=HEADERS, timeout=20)
+                if img_r.status_code == 200 and len(img_r.content) > 15000:
+                    with open(filename, "wb") as f:
+                        f.write(img_r.content)
+                    if verify_and_prepare_image(filename):
+                        print(f"  [✓] Downloaded Unsplash HD Photo for '{query}'")
+                        return filename
+    except Exception as e:
+        print(f"  [!] Unsplash search skip ({query}): {e}")
+
+    # 3. Guaranteed Valid Image Backup
+    img = Image.new("RGB", (1080, 1920), (25, 30, 45))
+    img.save(filename, "JPEG", quality=92)
     return filename
 
 def verify_and_prepare_image(filepath):
-    """Verifies image integrity and enhances contrast/color like a pro editor."""
     try:
         with Image.open(filepath) as im:
             im = im.convert("RGB")
             w, h = im.size
-            if w < 250 or h < 250:
+            if w < 200 or h < 200:
                 return False
-            # Pro Color Grading: slight contrast and color saturation boost
             im = ImageEnhance.Contrast(im).enhance(1.12)
             im = ImageEnhance.Color(im).enhance(1.18)
             im.save(filepath, "JPEG", quality=92)
@@ -357,11 +308,9 @@ def verify_and_prepare_image(filepath):
         return False
 
 def create_caption_overlay(caption_text, badge_text, scene_idx, total_scenes, part_num):
-    """Creates crisp Hormozi-style pop-up caption overlay PNG."""
     overlay = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Subtle top & bottom cinematic shadow vignette
     for y in range(320):
         alpha = int(175 * (1 - y / 320))
         draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
@@ -372,32 +321,27 @@ def create_caption_overlay(caption_text, badge_text, scene_idx, total_scenes, pa
     font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
     try:
         badge_font = ImageFont.truetype(font_path, 36)
-        cap_font = ImageFont.truetype(font_path, 72)
+        cap_font = ImageFont.truetype(font_path, 70)
     except Exception:
         badge_font = ImageFont.load_default()
         cap_font = ImageFont.load_default()
 
-    # Top Red/Gold Category Pill
     bw, bh = 560, 74
     bx, by = (1080 - bw) // 2, 105
     draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=37, fill=(220, 38, 38, 245), outline=(255, 255, 255, 230), width=3)
     draw.text((540, by + bh // 2), badge_text.upper(), font=badge_font, fill=(255, 255, 255, 255), anchor="mm")
 
-    # Dynamic Pop Caption Box
     lines = textwrap.wrap(caption_text.upper(), width=16)
     y_start = 1470 - (len(lines) * 48)
 
     for i, line in enumerate(lines):
         y_pos = y_start + i * 100
-        # Part 1 pops in Bright Yellow/White, Part 2 pops in Cyber Green/Yellow
         if part_num == 1:
             color = (255, 230, 0, 255) if i % 2 == 0 else (255, 255, 255, 255)
         else:
             color = (0, 255, 163, 255) if i % 2 == 0 else (255, 255, 255, 255)
-
         draw.text((540, y_pos), line, font=cap_font, fill=color, anchor="mm", stroke_width=12, stroke_fill=(0, 0, 0, 255))
 
-    # Smooth Progress Bar at Bottom
     progress_fraction = (scene_idx + (0.5 if part_num == 1 else 1.0)) / total_scenes
     prog_w = int(1000 * progress_fraction)
     draw.rounded_rectangle([40, 1845, 1040, 1863], radius=9, fill=(255, 255, 255, 65))
@@ -440,9 +384,8 @@ def get_audio_duration(audio_path):
     return max(float(out), 3.0)
 
 def prepare_visual_subclip(media_path, is_video, overlay_path, duration, sub_idx, out_clip):
-    """Renders a 2.5s - 3s B-roll shot with dynamic camera zoom/pan and caption overlay."""
+    """100% Crash-Proof FFmpeg Renderer for both Stock Videos and Stock Photos."""
     if is_video:
-        # Real moving Stock Video B-Roll cropped to 9:16 vertical + overlay
         vf = (
             "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,"
             "crop=1080:1920,eq=contrast=1.08:saturation=1.15[bg];"
@@ -458,12 +401,11 @@ def prepare_visual_subclip(media_path, is_video, overlay_path, duration, sub_idx
             out_clip
         ]
     else:
-        # High-Res Real Stock Photo with dynamic punch-in / pan motion
-        zoom_expr = f"1.0+0.12*(t/{duration})" if sub_idx % 2 == 0 else f"1.12-0.10*(t/{duration})"
+        # Fixed width/height (1080:1920) with smooth time-based x/y camera pan (Never crashes!)
+        direction = 1 if sub_idx % 2 == 0 else -1
         vf = (
-            f"[0:v]scale=1350:2400:force_original_aspect_ratio=increase,crop=1350:2400,"
-            f"crop=w='1080/{zoom_expr}':h='1920/{zoom_expr}':x='(in_w-out_w)/2':y='(in_h-out_h)/2',"
-            f"scale=1080:1920[bg];"
+            f"[0:v]scale=1240:2200:force_original_aspect_ratio=increase,crop=1240:2200,"
+            f"crop=1080:1920:'(in_w-out_w)/2+({direction}*55)*sin(t*1.1)':'(in_h-out_h)/2+70*cos(t*0.8)'[bg];"
             f"[bg][1:v]overlay=0:0,format=yuv420p[v]"
         )
         cmd = [
@@ -475,10 +417,27 @@ def prepare_visual_subclip(media_path, is_video, overlay_path, duration, sub_idx
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
             out_clip
         ]
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    try:
+        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        # Ultimate failsafe if any downloaded image/video has unusual dimensions
+        safe_vf = (
+            "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920[bg];"
+            "[bg][1:v]overlay=0:0,format=yuv420p[v]"
+        )
+        safe_cmd = [
+            "ffmpeg", "-y",
+            "-loop", "1", "-t", str(duration), "-i", media_path,
+            "-loop", "1", "-t", str(duration), "-i", overlay_path,
+            "-filter_complex", safe_vf,
+            "-map", "[v]", "-r", "24", "-an",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+            out_clip
+        ]
+        subprocess.run(safe_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def render_two_cut_scene(scene, idx, total_scenes, badge):
-    """Splits each scene into 2 rapid visual cuts (Shot A + Shot B) synced to the full Urdu voiceover."""
     audio_path = asyncio.run(synthesize_scene_voice(scene["tts_urdu"], idx))
     total_dur = get_audio_duration(audio_path)
     half_dur = round(total_dur / 2.0, 2)
@@ -488,7 +447,6 @@ def render_two_cut_scene(scene, idx, total_scenes, badge):
     q2 = scene.get("search_query_2", "counting money")
     v_kw = scene.get("video_keyword", "mechanic")
 
-    # Shot 1: Try Real Stock Video MP4 first, else Real HD Photo
     vid_file = fetch_real_stock_video(v_kw, f"stock_vid_{idx}.mp4")
     if vid_file:
         media1, is_vid1 = vid_file, True
@@ -496,7 +454,6 @@ def render_two_cut_scene(scene, idx, total_scenes, badge):
         media1 = fetch_real_stock_photo(q1, f"photo_{idx}_1.jpg")
         is_vid1 = False
 
-    # Shot 2: Always a specific Real HD Photo matching the second half of the sentence
     media2 = fetch_real_stock_photo(q2, f"photo_{idx}_2.jpg")
 
     ov1 = create_caption_overlay(scene.get("caption_part1", "ASLI HAQEEQAT"), badge, idx, total_scenes, 1)
@@ -507,7 +464,6 @@ def render_two_cut_scene(scene, idx, total_scenes, badge):
     prepare_visual_subclip(media1, is_vid1, ov1, half_dur, 0, sub1)
     prepare_visual_subclip(media2, False, ov2, rem_dur, 1, sub2)
 
-    # Combine Shot 1 + Shot 2 + Scene Voiceover seamlessly
     list_file = f"scene_list_{idx}.txt"
     with open(list_file, "w") as f:
         f.write(f"file '{sub1}'\nfile '{sub2}'\n")
