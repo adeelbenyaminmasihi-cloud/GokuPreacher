@@ -2,7 +2,8 @@ name: Automated Urdu Video Generator
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    # Rozana 3 Videos (Pakistan Time: Subah 9:00, Dopehar 3:00, Raat 9:00)
+    - cron: '0 4,10,16 * * *'
   workflow_dispatch:
 
 jobs:
@@ -17,16 +18,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install FFmpeg Quickly
+      - name: Install FFmpeg and Fonts
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
 
-      - name: Install Python Dependencies
+      - name: Install Python Libraries
         run: |
-          pip install --no-cache-dir google-generativeai edge-tts requests
+          pip install --no-cache-dir edge-tts requests pillow
 
-      - name: Run Video Generator Script
+      - name: Run Video Generator Employee
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
