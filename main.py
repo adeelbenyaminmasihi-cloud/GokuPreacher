@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import random
 import asyncio
@@ -7,103 +8,96 @@ import urllib.parse
 import textwrap
 import requests
 import edge_tts
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 
-TOPICS = [
-    "Mobile ke 300 rupay wale local charger ka scam aur Georg Ohm ki Resistance physics",
-    "70cc aur 125cc bike mein petrol average barhane wale Carburetor mistri ka choona aur Bernoulli Principle",
-    "Inverter AC ko 16 degree par chalane ka nuqsan aur Thermodynamics ka asli kanoon",
-    "Fridge ki gas har saal khatam hone ka scam aur Ideal Gas Law ki haqeeqat",
-    "Tyre mein hawa kam rakhne ka desi jugaar, petrol ki tabahi aur Rolling Friction",
-    "Sardi mein geyser aur paani ki tanki thandi hone ka masla aur Thermal Conductivity",
-    "Mehngay detergent powder aur jhaag ka dhoka vs Surface Tension physics",
-    "Solar panels par gard (dust) jamne se 40% bijli gayab hone ka scam aur Photoelectric Effect",
-    "Gaadi ke radiator mein saada paani dalne ki ghalti aur Boiling Point Elevation",
-    "Fake power banks jo 20,000 mAh likh kar 3,000 mAh dete hain aur Energy Density"
+# Browser headers so servers NEVER block GitHub Actions
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9"
+}
+
+USED_TOPICS_FILE = "used_topics.json"
+
+ALL_TOPICS = [
+    {"topic": "70cc aur 125cc bike mein petrol average barhane wale Carburetor mistri ka choona aur Bernoulli Principle", "keywords": ["motorcycle engine", "mechanic repair", "fuel pump", "motorbike"]},
+    {"topic": "Inverter AC ko 16 degree par chalane ka nuqsan, bijli ka bhari bill aur Thermodynamics", "keywords": ["air conditioner", "electricity meter", "summer heat", "money bills"]},
+    {"topic": "Fridge ki gas har saal khatam hone ka mistri scam aur Closed Loop Thermodynamics", "keywords": ["refrigerator kitchen", "repairman tools", "ice cooling", "wallet cash"]},
+    {"topic": "Gaadi aur bike ke tyre mein hawa kam rakhne ka nuqsan, petrol ki tabahi aur Rolling Friction", "keywords": ["car tire pressure", "asphalt road", "petrol station", "car wheel"]},
+    {"topic": "Solar panels par mitti jamne se 40% bijli gayab hone ki haqeeqat aur Photoelectric Effect", "keywords": ["solar panels roof", "sunlight energy", "dust storm", "battery inverter"]},
+    {"topic": "Gaadi ke radiator mein saada paani dalne se engine seize hone ka choona aur Boiling Point Elevation", "keywords": ["car hood smoke", "engine coolant", "auto mechanic", "boiling water"]},
+    {"topic": "Fake 20,000 mAh Power Bank ka dhanda aur Lithium Ion Energy Density ki physics", "keywords": ["powerbank charging", "lithium battery", "electronics market", "smartphone"]},
+    {"topic": "Sardi mein geyser ka bill double aane ki waja aur Thermal Insulation ka desi jugaar", "keywords": ["water heater", "winter cold", "gas flame", "plumber pipe"]},
+    {"topic": "Mehngay Engine Flush aur Fuel Injector cleaner ka scam vs Fluid Detergency", "keywords": ["motor oil pouring", "car engine pistons", "auto parts shop", "cash money"]},
+    {"topic": "UPS ki tubular battery jaldi kharab hone ka raaz aur Lead Acid Sulfation", "keywords": ["car battery acid", "power outage dark", "electrician wires", "sparks"]},
+    {"topic": "3-Pin Plug mein Earth wire na lagane ki Pakistani ghalti aur AC Current Grounding", "keywords": ["electric socket plug", "electrical sparks", "house wiring", "shock"]},
+    {"topic": "Microfiber kapray ki jagah purani banyan se gaadi saaf karne ka nuqsan aur Abrasion Physics", "keywords": ["washing car", "scratched paint", "luxury car shine", "auto detailing"]},
+    {"topic": "Pressure Cooker ki seeti aur paharon par daal na galne ka raaz: Atmospheric Pressure", "keywords": ["cooking pot steam", "kitchen fire", "mountains clouds", "boiling food"]},
+    {"topic": "LED Bulbs ke har 6 mahine baad jalne ka scam aur Heat Sink Thermal Dissipation", "keywords": ["light bulb glowing", "circuit board", "electric shop", "dark room"]},
+    {"topic": "Bike ke silencer mein patakhay marne se engine valves tootne ki physics: Backpressure", "keywords": ["motorcycle exhaust fire", "biker street", "broken engine", "mechanic"]}
 ]
 
 SYSTEM_PROMPT = """
-You are an elite Pakistani short-form infotainment scriptwriter (like ZemTV meets funny Desi street smarts).
-Write a hilarious, high-energy, 60-second vertical video script (10 scenes) about the requested topic.
+You are Pakistan's top viral infotainment video creator (like ZemTV meets funny Desi street smarts).
+Write a hilarious, high-energy, 60-second vertical video script (10 scenes) on the given topic.
 
-Follow this exact structure:
-- Scenes 1-2: THE HOOK (Shocking financial loss / "choona" + funny Desi observation + blame it on ignoring Physics).
-- Scenes 3-5: THE STORY / EXPERIMENT (A bizarre historical event or real-world experiment showing this physics law in action).
-- Scenes 6-8: THE POCKET IMPACT (How local mechanics, shopkeepers, or "ustaad" use this against common people and cost them thousands of rupees).
-- Scenes 9-10: THE MORAL & PUNCHY CTA ("Physics koi boring syllabus nahi, dunya ka Source Code hai!").
+Structure:
+- Scenes 1-2: THE HOOK (Shocking financial "choona" + funny Desi observation + Physics twist).
+- Scenes 3-5: THE SCIENCE / REAL STORY (How the physics law actually works in real life with vivid examples).
+- Scenes 6-8: THE POCKET IMPACT (How local "ustaad", mechanics, or shopkeepers fool people and cost them 10,000+ rupees).
+- Scenes 9-10: THE MORAL & PUNCHY CTA ("Physics koi ratta nahi, dunya ka Source Code hai! Follow daba do!").
 
-CRITICAL RULES FOR VOICEOVER QUALITY:
-1. "tts_urdu" MUST be written in PROPER URDU SCRIPT (اردو رسم الخط) using natural, conversational Pakistani spoken style (bol-chaal ki zaban). Write English words in Urdu script (e.g., فزکس, مکینک, بیٹری, وولٹیج) so the Urdu voice engine pronounces everything naturally without spelling out English letters!
-2. "caption" MUST be short (4 to 7 words max) in punchy Roman Urdu + English (ALL CAPS) to display on screen.
-3. "image_prompt" MUST be a vivid English visual description for generating a vertical 9:16 photorealistic scene (NO text in image).
+STRICT RULES:
+1. "tts_urdu": MUST be in PROPER URDU SCRIPT (اردو رسم الخط) using natural, conversational, witty Pakistani spoken Urdu. Transliterate English words into Urdu script (e.g. مکینک، انجن، فزکس، بیٹری، وولٹیج) so the Urdu voice pronounces them smoothly. Each scene MUST be 14 to 18 words long.
+2. "caption_part1": First half of the punchline in Roman Urdu (3 to 4 words, ALL CAPS).
+3. "caption_part2": Second half of the punchline in Roman Urdu (3 to 4 words, ALL CAPS).
+4. "search_query_1": A 2-to-3 word English search query for a REAL stock photo/video for the first 3 seconds (e.g. "car mechanic engine", "burning electric wire", "counting money cash").
+5. "search_query_2": A DIFFERENT 2-to-3 word English search query for the second 3 seconds (e.g. "broken smartphone screen", "petrol pump nozzle", "scientist laboratory").
+6. "video_keyword": Single English category word for stock video search (choose from: "car", "mechanic", "phone", "money", "electricity", "fire", "water", "technology", "engine", "traffic", "tools", "battery").
 
-Return ONLY valid JSON in this exact format (no markdown blocks):
+Return ONLY valid raw JSON in this exact format:
 {
   "title": "Catchy Roman Urdu Title",
   "hashtags": "#PhysicsLogic #DesiScam #UrduFacts #ReelsPakistan",
   "category_badge": "PHYSICS VS CHOONA",
   "scenes": [
     {
-      "tts_urdu": "اردو رسم الخط میں قدرتی اور مزیدار جملہ جو کم از کم بارہ سے پندرہ الفاظ کا ہو۔",
-      "caption": "HAR MAHINE 10,000 KA CHOONA?!",
-      "image_prompt": "Cinematic close up of a cunning street mechanic holding an engine oil bottle smiling, dramatic lighting, photorealistic, 9:16 vertical"
+      "tts_urdu": "اردو رسم الخط میں قدرتی اور مزیدار جملہ۔",
+      "caption_part1": "HAR 2 MAHINE BAAD",
+      "caption_part2": "10,000 KA CHOONA?!",
+      "search_query_1": "auto mechanic smiling",
+      "search_query_2": "pouring engine oil",
+      "video_keyword": "mechanic"
     }
   ]
 }
-Ensure there are EXACTLY 10 scenes, and each scene's "tts_urdu" is 14 to 20 words long so the total video is ~60 seconds.
 """
 
-def generate_script_data():
-    topic = random.choice(TOPICS)
-    print(f"Selected Topic: {topic}")
-    full_prompt = f"{SYSTEM_PROMPT}\n\nTopic to write about today: {topic}"
-
-    # 1. Try Gemini REST API first if a valid AIzaSy key is provided
-    if GEMINI_API_KEY.startswith("AIza"):
+def pick_unused_topic():
+    used = []
+    if os.path.exists(USED_TOPICS_FILE):
         try:
-            print("Trying Google Gemini API...")
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-            payload = {
-                "contents": [{"parts": [{"text": full_prompt}]}],
-                "generationConfig": {"responseMimeType": "application/json"}
-            }
-            resp = requests.post(url, json=payload, timeout=45)
-            if resp.status_code == 200:
-                raw_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-                return clean_and_parse_json(raw_text)
-        except Exception as e:
-            print(f"Gemini API skipped: {e}")
+            with open(USED_TOPICS_FILE, "r") as f:
+                used = json.load(f)
+        except Exception:
+            used = []
 
-    # 2. Free Keyless AI Generator (Pollinations OpenAI GPT-4o-mini endpoint)
-    for attempt in range(3):
-        try:
-            print(f"Generating script via Free AI Engine (Attempt {attempt+1})...")
-            resp = requests.post(
-                "https://text.pollinations.ai/",
-                json={
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": f"Create a 10-scene funny 60-second script on: {topic}. Return ONLY raw JSON."}
-                    ],
-                    "model": "openai",
-                    "jsonMode": True,
-                    "seed": random.randint(1, 999999)
-                },
-                timeout=60
-            )
-            if resp.status_code == 200 and resp.text.strip():
-                return clean_and_parse_json(resp.text)
-        except Exception as e:
-            print(f"Free AI Attempt {attempt+1} error: {e}")
+    available = [t for t in ALL_TOPICS if t["topic"] not in used]
+    if not available:
+        used = []
+        available = ALL_TOPICS
 
-    print("Using built-in full 10-scene master script...")
-    return get_backup_master_script()
+    chosen = random.choice(available)
+    used.append(chosen["topic"])
+    with open(USED_TOPICS_FILE, "w") as f:
+        json.dump(used, f, indent=2)
+    return chosen
 
-def clean_and_parse_json(raw_text):
+def clean_json(raw_text):
     text = raw_text.strip()
     if "```json" in text:
         text = text.split("```json")[1].split("```")[0].strip()
@@ -111,260 +105,123 @@ def clean_and_parse_json(raw_text):
         text = text.split("```")[1].split("```")[0].strip()
     start = text.find("{")
     end = text.rfind("}") + 1
+    if start == -1 or end <= 0:
+        raise ValueError("No JSON object found")
     data = json.loads(text[start:end])
-    if "scenes" in data and len(data["scenes"]) >= 6:
+    if "scenes" in data and len(data["scenes"]) >= 8:
         return data
-    raise ValueError("Incomplete scenes in JSON")
+    raise ValueError("Too few scenes")
 
-def get_backup_master_script():
+def generate_script_data():
+    chosen = pick_unused_topic()
+    topic_str = chosen["topic"]
+    print(f"🔥 Today's Fresh Topic: {topic_str}")
+
+    user_msg = f"Write a fresh, hilarious 10-scene 60-second script on: '{topic_str}'. Random Seed: {random.randint(10000,99999)}. Return ONLY valid JSON."
+
+    # 1. Try Pollinations OpenAI Endpoint with Browser User-Agent
+    for model_name in ["openai", "openai-large", "mistral"]:
+        try:
+            print(f"Requesting AI Script via model '{model_name}'...")
+            resp = requests.post(
+                "https://text.pollinations.ai/openai",
+                headers={**HEADERS, "Content-Type": "application/json"},
+                json={
+                    "model": model_name,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_msg}
+                    ],
+                    "temperature": 0.9,
+                    "seed": random.randint(1, 999999)
+                },
+                timeout=65
+            )
+            if resp.status_code == 200:
+                res_json = resp.json()
+                content = res_json["choices"][0]["message"]["content"]
+                return clean_json(content)
+        except Exception as e:
+            print(f"Model {model_name} attempt failed: {e}")
+
+    # 2. Try Direct GET Pollinations Endpoint with Browser Headers
+    try:
+        print("Trying direct GET AI endpoint...")
+        encoded = urllib.parse.quote(f"{SYSTEM_PROMPT}\n\n{user_msg}")
+        url = f"https://text.pollinations.ai/{encoded}?model=openai&seed={random.randint(1,99999)}&json=true"
+        resp = requests.get(url, headers=HEADERS, timeout=60)
+        if resp.status_code == 200:
+            return clean_json(resp.text)
+    except Exception as e:
+        print(f"GET endpoint error: {e}")
+
+    # 3. Dynamic Topic-Specific Script Builder (Never repeats!)
+    print("Building dynamic topic script...")
+    return build_dynamic_script_for_topic(chosen)
+
+def build_dynamic_script_for_topic(chosen):
+    topic = chosen["topic"]
+    kw = chosen["keywords"]
     return {
-        "title": "300 Wala Local Charger Aur Physics Ka Choona!",
-        "hashtags": "#PhysicsLogic #MobileScam #PakistaniReels #TechUrdu #DimaagKholo",
-        "category_badge": "PHYSICS VS DESI JUGAAR",
+        "title": topic.split(" aur ")[0] + " Ka Asli Sach!",
+        "hashtags": "#PhysicsLogic #DesiScam #PakistaniReels #ScienceUrdu #DimaagKholo",
+        "category_badge": "USTAAD VS PHYSICS",
         "scenes": [
             {
-                "tts_urdu": "فون کی بیٹری بیس فیصد سے سیدھا زیرو پر کیسے گر جاتی ہے؟ اور اس میں غلطی آپ کے فون کی نہیں، آپ کی فزکس کی ہے!",
-                "caption": "BATTERY 20% SE SEEDHA ZERO?!",
-                "image_prompt": "Shocked young Pakistani man looking at his smartphone with dead battery warning icon, dramatic neon lighting, photorealistic vertical"
+                "tts_urdu": f"کیا آپ جانتے ہیں کہ ہر مہینے آپ کی جیب سے ہزاروں روپے کیسے نکالے جاتے ہیں؟ اور قصور آپ کی فزکس نہ جاننے کا ہے!",
+                "caption_part1": "HAR MAHINE JEB SE",
+                "caption_part2": "HAZAROON GAYAB?!",
+                "search_query_1": kw[0],
+                "search_query_2": "counting money cash",
+                "video_keyword": "money"
             },
             {
-                "tts_urdu": "جب آپ تین سو روپے والا لوکل چارجر یا سستی کیبل خریدتے ہو تو آپ کو لگتا ہے کہ آپ نے دکاندار کو ماموں بنا دیا۔",
-                "caption": "300 WALA SASTA CHARGER KA SCAM!",
-                "image_prompt": "Street mobile accessories shop with cheap tangled white charging cables hanging, cinematic lighting, vertical 9:16"
+                "tts_urdu": f"آج ہم بات کریں گے سب سے بڑے دیسی دھوکے کی، یعنی {topic} کے پیچھے چھپی اصلی سائنس کی!",
+                "caption_part1": "DESI JUGAAR KA",
+                "caption_part2": "SABSE BADA SCAM!",
+                "search_query_1": kw[1],
+                "search_query_2": kw[2],
+                "video_keyword": "mechanic"
             },
             {
-                "tts_urdu": "مگر اٹھارہ سو ستائیس میں جارج اوہم نے ایک ایسا قانون دریافت کیا تھا جو آج آپ کی جیب میں روز آگ لگا رہا ہے، یعنی اوہمز لا!",
-                "caption": "1827 KA OHM'S LAW AUR APKI JEB!",
-                "image_prompt": "Vintage 19th century scientist in a laboratory with glowing copper wires and electricity sparks, dramatic cinematic"
+                "tts_urdu": "ہمارے گلی محلے کے استاد اکثر ایک ایسا مشورہ دیتے ہیں جو سننے میں بڑا سستا لگتا ہے مگر اندر ہی اندر مشین تباہ کر دیتا ہے۔",
+                "caption_part1": "USTAAD KA SASTA",
+                "caption_part2": "MASHWARA = TABAHI!",
+                "search_query_1": "repairman tools workshop",
+                "search_query_2": kw[0],
+                "video_keyword": "tools"
             },
             {
-                "tts_urdu": "اصلی چارجر کی تار میں خالص کاپر ہوتا ہے جس میں بجلی مکھن کی طرح دوڑتی ہے، مگر سستی کیبل میں لوہا اور ہلکا ایلومینیم ملایا جاتا ہے۔",
-                "caption": "PURE COPPER VS SASTA KACHRA WIRE",
-                "image_prompt": "Macro close up of glowing copper wire strands versus burnt cheap aluminum wire, high detail 3d render vertical"
+                "tts_urdu": "فزکس کا بنیادی قانون کہتا ہے کہ توانائی نہ خود بنتی ہے اور نہ غائب ہوتی ہے، بلکہ غلط جگاڑ سے سیدھا ہیٹ اور نقصان میں بدل جاتی ہے!",
+                "caption_part1": "ENERGY LOSS AUR",
+                "caption_part2": "PHYSICS KA QANOON!",
+                "search_query_1": "physics laboratory electricity",
+                "search_query_2": "thermal heat camera",
+                "video_keyword": "electricity"
             },
             {
-                "tts_urdu": "فزکس کہتی ہے کہ جب پتلی اور نقلی تار سے کرنٹ گزرتا ہے تو ریزسٹنس یعنی رکاوٹ دس گنا بڑھ جاتی ہے اور تار ہیٹر بن جاتی ہے!",
-                "caption": "HIGH RESISTANCE = MOBILE BANA HEATER!",
-                "image_prompt": "Glowing red hot electrical circuit board with sparks flying and heat waves, cinematic macro shot"
+                "tts_urdu": "جب آپ سستے جگاڑ کے چکر میں سسٹم کا قدرتی پریشر یا بیلنس چھیڑتے ہیں تو مشین کو دو گنا زیادہ زور لگانا پڑتا ہے۔",
+                "caption_part1": "MACHINE PAR",
+                "caption_part2": "DO GUNA LOAD!",
+                "search_query_1": kw[2],
+                "search_query_2": "engine gears closeup",
+                "video_keyword": "engine"
             },
             {
-                "tts_urdu": "دکاندار بڑے پیار سے کہتا ہے کہ بھائی جان اوریجنل تین ہزار کا ہے، یہ تین سو والا لے لو، دونوں ایک ہی فیکٹری سے آتے ہیں۔",
-                "caption": "DUKANDAR KA SABSE BADA JHOOT!",
-                "image_prompt": "Clever electronics shopkeeper showing a cheap phone charger with a sly smile, cinematic realistic portrait"
+                "tts_urdu": "شروع کے دس دن تو آپ خوش ہوتے ہیں کہ پیسے بچ گئے، مگر اندر کے پرزے رگڑ کھا کھا کر پورے ختم ہو رہے ہوتے ہیں۔",
+                "caption_part1": "10 DIN KI KHUSHI",
+                "caption_part2": "ANDAR SE PURZAY KHATAM!",
+                "search_query_1": "broken metal gears",
+                "search_query_2": kw[1],
+                "video_keyword": "car"
             },
             {
-                "tts_urdu": "مگر وہ سستا چارجر ہر سیکنڈ وولٹیج کے جھٹکے مارتا ہے جس سے آپ کے فون کی چارجنگ آئی سی اور بیٹری اندر ہی اندر جل جاتی ہے۔",
-                "caption": "CHARGING IC AUR BATTERY TABAH!",
-                "image_prompt": "Smartphone opened up on a repair table with smoke coming out of the battery and motherboard, dramatic lighting"
+                "tts_urdu": "پھر دو مہینے بعد جب آپ دوبارہ کاریگر کے پاس جاتے ہیں تو وہی استاد مسکرا کر دس ہزار روپے کا لمبا بل پکڑا دیتا ہے!",
+                "caption_part1": "2 MAHINE BAAD",
+                "caption_part2": "10,000 KA LAMBA BILL!",
+                "search_query_1": "stressed man bill",
+                "search_query_2": "auto repair shop",
+                "video_keyword": "money"
             },
             {
-                "tts_urdu": "تین سو روپے بچانے کے چکر میں دو مہینے بعد جب آپ کاریگر کے پاس جاتے ہو تو سیدھا پندرہ ہزار روپے کا بل ہاتھ میں آتا ہے!",
-                "caption": "300 BACHAYE, 15,000 KA FAtKA LAGA!",
-                "image_prompt": "Phone repair technician handing a huge repair bill to a stressed customer, cinematic lighting"
-            },
-            {
-                "tts_urdu": "ٹیسلا کی الیکٹرک گاڑیوں سے لے کر آپ کے موبائل فون تک، ہر جگہ واٹ، ایمپیئر اور ریزسٹنس کا یہی پکا حساب چلتا ہے۔",
-                "caption": "TESLA SE LE KAR APKE PHONE TAK!",
-                "image_prompt": "Futuristic electric car charging station glowing with blue energy next to a smartphone charging, high tech"
-            },
-            {
-                "tts_urdu": "فزکس کوئی رٹے والا مضمون نہیں بلکہ اس دنیا کا سورس کوڈ ہے! روزانہ ایسی اصلی لاجک سیکھنے کے لیے ابھی فالو کا بٹن دبا دو!",
-                "caption": "DUNYA KA SOURCE CODE SEEKHO - FOLLOW!",
-                "image_prompt": "Confident smart creator pointing at camera with glowing physics formulas floating in background, vibrant cinematic"
-            }
-        ]
-    }
-
-def download_scene_image(prompt, index):
-    img_path = f"raw_scene_{index}.jpg"
-    enhanced_prompt = f"{prompt}, ultra detailed, cinematic lighting, vibrant colors, vertical 9:16 aspect ratio, no text"
-    encoded = urllib.parse.quote(enhanced_prompt)
-    seed = random.randint(1000, 999999)
-    url = f"https://image.pollinations.ai/prompt/{encoded}?width=1080&height=1920&nologo=true&seed={seed}"
-
-    for attempt in range(2):
-        try:
-            r = requests.get(url, timeout=30)
-            if r.status_code == 200 and len(r.content) > 10000:
-                with open(img_path, "wb") as f:
-                    f.write(r.content)
-                return img_path
-        except Exception as e:
-            print(f"Image fetch retry {index}: {e}")
-
-    # Attractive colorful gradient fallback if internet hiccups
-    img = Image.new("RGB", (1080, 1920), (18, 24, 42))
-    draw = ImageDraw.Draw(img)
-    palette = [(14, 165, 233), (249, 115, 22), (168, 85, 247), (16, 185, 129), (239, 68, 68)]
-    accent = palette[index % len(palette)]
-    for y in range(1920):
-        ratio = y / 1920
-        r_c = int(15 * (1 - ratio) + accent[0] * ratio * 0.45)
-        g_c = int(20 * (1 - ratio) + accent[1] * ratio * 0.45)
-        b_c = int(35 * (1 - ratio) + accent[2] * ratio * 0.45)
-        draw.line([(0, y), (1080, y)], fill=(r_c, g_c, b_c))
-    img.save(img_path)
-    return img_path
-
-def create_overlay_png(caption_text, badge_text, scene_idx, total_scenes):
-    """Creates a transparent 1080x1920 overlay with Hormozi-style captions and top badge."""
-    overlay = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-
-    # Top and bottom dark cinematic gradient for readability
-    for y in range(380):
-        alpha = int(190 * (1 - y / 380))
-        draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
-    for y in range(1250, 1920):
-        alpha = int(235 * ((y - 1250) / 670))
-        draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
-
-    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-    try:
-        badge_font = ImageFont.truetype(font_path, 38)
-        caption_font = ImageFont.truetype(font_path, 66)
-    except Exception:
-        badge_font = ImageFont.load_default()
-        caption_font = ImageFont.load_default()
-
-    # Top Category Pill Badge
-    badge_w, badge_h = 580, 78
-    bx1 = (1080 - badge_w) // 2
-    by1 = 110
-    draw.rounded_rectangle([bx1, by1, bx1 + badge_w, by1 + badge_h], radius=39, fill=(220, 38, 38, 240), outline=(255, 255, 255, 220), width=3)
-    draw.text((1080 // 2, by1 + badge_h // 2), badge_text.upper(), font=badge_font, fill=(255, 255, 255, 255), anchor="mm")
-
-    # Center-Bottom Bold Captions (Wrapped)
-    lines = textwrap.wrap(caption_text.upper(), width=18)
-    y_start = 1430 - (len(lines) * 45)
-
-    for i, line in enumerate(lines):
-        y_pos = y_start + i * 95
-        # Alternating vibrant Yellow and White lines like viral Reels
-        text_color = (255, 230, 0, 255) if i % 2 == 0 else (255, 255, 255, 255)
-        # Black heavy stroke/shadow
-        draw.text((540, y_pos), line, font=caption_font, fill=text_color, anchor="mm", stroke_width=10, stroke_fill=(0, 0, 0, 255))
-
-    # Bottom Progress Bar
-    prog_width = int(1000 * ((scene_idx + 1) / total_scenes))
-    draw.rounded_rectangle([40, 1840, 1040, 1860], radius=10, fill=(255, 255, 255, 70))
-    draw.rounded_rectangle([40, 1840, 40 + prog_width, 1860], radius=10, fill=(255, 215, 0, 255))
-
-    overlay_path = f"overlay_{scene_idx}.png"
-    overlay.save(overlay_path)
-    return overlay_path
-
-async def synthesize_scene_voice(urdu_text, index):
-    raw_audio = f"raw_voice_{index}.mp3"
-    mastered_audio = f"voice_{index}.m4a"
-
-    # Using Natural Pakistani Urdu Neural Voice with energetic speed (+12%)
-    communicate = edge_tts.Communicate(urdu_text, voice="ur-PK-AsadNeural", rate="+12%", pitch="-2Hz")
-    await communicate.save(raw_audio)
-
-    # Studio Audio Mastering via FFmpeg: trims dead silence + adds warm podcast EQ & compression
-    af_chain = (
-        "silenceremove=start_periods=1:start_silence=0.05:start_threshold=-45dB,"
-        "highpass=f=75,"
-        "bass=g=4:f=110,"
-        "treble=g=3:f=4500,"
-        "acompressor=threshold=-16dB:ratio=3:attack=5:release=60:makeup=3dB,"
-        "apad=pad_dur=0.18"
-    )
-    cmd = [
-        "ffmpeg", "-y", "-i", raw_audio,
-        "-af", af_chain,
-        "-ar", "44100", "-ac", "2", "-c:a", "aac", "-b:a", "192k",
-        mastered_audio
-    ]
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return mastered_audio
-
-def get_audio_duration(audio_path):
-    cmd = [
-        "ffprobe", "-v", "error",
-        "-show_entries", "format=duration",
-        "-of", "default=noprint_wrappers=1:nokey=1",
-        audio_path
-    ]
-    out = subprocess.check_output(cmd).decode().strip()
-    return max(float(out), 2.5)
-
-def render_scene_clip(img_path, overlay_path, audio_path, index):
-    duration = get_audio_duration(audio_path)
-    clip_path = f"scene_clip_{index}.mp4"
-
-    # Smooth continuous camera pan/motion on background while captions stay rock-solid
-    direction = 1 if index % 2 == 0 else -1
-    vf_filter = (
-        f"[0:v]scale=1220:2168:force_original_aspect_ratio=increase,crop=1220:2168,"
-        f"crop=1080:1920:'(in_w-out_w)/2+({direction}*45)*sin(t*0.9)':'(in_h-out_h)/2+60*cos(t*0.7)'[bg];"
-        f"[bg][1:v]overlay=0:0,format=yuv420p[v]"
-    )
-
-    cmd = [
-        "ffmpeg", "-y",
-        "-loop", "1", "-t", str(duration), "-i", img_path,
-        "-loop", "1", "-t", str(duration), "-i", overlay_path,
-        "-i", audio_path,
-        "-filter_complex", vf_filter,
-        "-map", "[v]", "-map", "2:a",
-        "-r", "24",
-        "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
-        "-c:a", "copy",
-        "-shortest",
-        clip_path
-    ]
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return clip_path
-
-def build_full_video(script_data):
-    scenes = script_data["scenes"]
-    badge = script_data.get("category_badge", "PHYSICS VS CHOONA")
-    clip_files = []
-
-    for idx, scene in enumerate(scenes):
-        print(f"Processing Scene {idx+1}/{len(scenes)}: {scene['caption']}")
-        audio_path = asyncio.run(synthesize_scene_voice(scene["tts_urdu"], idx))
-        img_path = download_scene_image(scene["image_prompt"], idx)
-        overlay_path = create_overlay_png(scene["caption"], badge, idx, len(scenes))
-        clip_path = render_scene_clip(img_path, overlay_path, audio_path, idx)
-        clip_files.append(clip_path)
-
-    with open("concat_list.txt", "w") as f:
-        for clip in clip_files:
-            f.write(f"file '{clip}'\n")
-
-    final_output = "final_reel.mp4"
-    subprocess.run([
-        "ffmpeg", "-y", "-f", "concat", "-safe", "0",
-        "-i", "concat_list.txt",
-        "-c:v", "libx264", "-preset", "fast", "-crf", "22",
-        "-c:a", "aac", "-b:a", "192k",
-        final_output
-    ], check=True)
-    return final_output
-
-def send_to_telegram(video_path, script_data):
-    print("Uploading HD video to Telegram...")
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendVideo"
-    caption = (
-        f"🔥 *Title:* {script_data.get('title', 'Physics Scam Exposed!')}\n\n"
-        f"📌 *Facebook Caption:*\n{script_data.get('title')}\n"
-        f"{script_data.get('hashtags', '#PhysicsLogic #ReelsPakistan')}\n\n"
-        f"✅ _1080x1920 Vertical HD | Studio Urdu Voice_"
-    )
-    with open(video_path, "rb") as vf:
-        resp = requests.post(
-            url,
-            data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "Markdown"},
-            files={"video": vf},
-            timeout=120
-        )
-        print("Telegram Status:", resp.status_code, resp.text)
-
-if __name__ == "__main__":
-    data = generate_script_data()
-    print("Generated Title:", data.get("title"))
-    final_video = build_full_video(data)
-    send_to_telegram(final_video, data)
+                "tts_urdu": "دنیا بھر کے انجینئرز کروڑوں ڈالر لگا کر جو ڈیزائن بناتے ہیں، ہمار
