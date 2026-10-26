@@ -17,11 +17,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install FFmpeg Quickly
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-          pip install google-generativeai edge-tts requests
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --no-cache-dir google-generativeai edge-tts requests
 
       - name: Run Video Generator Script
         env:
