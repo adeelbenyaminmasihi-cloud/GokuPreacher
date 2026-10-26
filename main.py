@@ -11,6 +11,7 @@ import edge_tts
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+PIXABAY_API_KEY = os.environ.get("PIXABAY_API_KEY", "").strip()
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 FB_ACCESS_TOKEN = os.environ.get("FACEBOOK_PAGE_ACCESS_TOKEN", "").strip()
@@ -31,156 +32,156 @@ ALL_TOPICS = [
         "tagline": "Mistri ka ek pechkas aap ke engine ka 15,000 ka kharcha kaise nikalta hai? 🛠️🔥",
         "description": "Jab mistri carburetor ka jet band karta hai to petrol bachne ke bajaye engine overheat ho kar piston aur valves jala deta hai. Asli Stoichiometric Ratio aur Bernoulli Physics samjhein!",
         "badge": "BIKE PETROL SCAM",
-        "hook_visual_1": "motorcycle fuel tank petrol",
-        "hook_visual_2": "counting cash money hand",
+        "hook_visual_1": "motorcycle engine",
+        "hook_visual_2": "counting money",
         "scientist_urdu": "سترہ سو اڑتیس میں سوئس سائنسدان ڈینیئل برنولی نے فلوئڈ ڈائنامکس کا وہ اصول بنایا جس پر آج آپ کی بائیک کا کاربوریٹر اور ہوائی جہاز چلتے ہیں!",
         "scientist_cap1": "1738 MEIN SCIENTIST",
         "scientist_cap2": "BERNOULLI KA QANOON!",
-        "sci_visual_1": "vintage scientist laboratory physics",
-        "sci_visual_2": "motorcycle carburetor engine closeup",
+        "sci_visual_1": "science laboratory",
+        "sci_visual_2": "motorcycle engine",
         "fact_urdu": "برنولی پرنسپل کے مطابق پٹرول کو مکمل جلنے کے لیے چودہ حصے ہوا اور ایک حصہ پٹرول کا پرفیکٹ بیلنس چاہیے ہوتا ہے جسے سٹوكیومیٹرک ریشو کہتے ہیں۔",
         "fact_cap1": "14 HISSE HAWA AUR",
         "fact_cap2": "1 HISSA PETROL BALANCE!",
-        "fact_visual_1": "engine piston fire combustion",
-        "fact_visual_2": "fuel injector spray closeup",
+        "fact_visual_1": "fire sparks",
+        "fact_visual_2": "car engine",
         "scam_urdu": "مگر جب محلے کا استاد پیچ کس گھما کر کاربوریٹر کا جیٹ ضرورت سے زیادہ بند کرتا ہے تو پٹرول بچنے کے بجائے انجن شدید اوور ہیٹ ہو جاتا ہے!",
         "scam_cap1": "MISTRI KA PECHKAS",
         "scam_cap2": "AUR ENGINE OVERHEAT!",
-        "scam_visual_1": "mechanic screwdriver repairing motorcycle",
-        "scam_visual_2": "overheated smoking motorcycle engine",
-        "loss_visual_1": "damaged burnt engine piston",
-        "loss_visual_2": "mechanic workshop repair bill",
-        "vid_queries": ["motorcycle engine", "mechanic repair", "petrol fuel"]
+        "scam_visual_1": "mechanic repair",
+        "scam_visual_2": "smoke engine",
+        "loss_visual_1": "broken machine gears",
+        "loss_visual_2": "auto repair shop",
+        "vid_queries": ["motorcycle", "mechanic", "fuel"]
     },
     {
         "topic": "Inverter AC ko 16 degree par chalane ka nuqsan aur Thermodynamics ka qanoon",
-        "tagline": "AC ko 16 degree par rakhنے se kamra jaldi thanda nahi hota, sirf 50,000 ka bill aata hai! ❄️💸",
+        "tagline": "AC ko 16 degree par rakhne se kamra jaldi thanda nahi hota, sirf 50,000 ka bill aata hai! ❄️💸",
         "description": "Thermodynamics ke mutabiq AC ki grill se nikalne wali hawa hamesha ek jaisi thandi hoti hai. 16 degree par compressor kabhi trip nahi karta aur bijli ka bill double ho jata hai!",
         "badge": "AC BILL CHOONA",
-        "hook_visual_1": "air conditioner cooling room",
-        "hook_visual_2": "high electricity bill shocked man",
+        "hook_visual_1": "air conditioner",
+        "hook_visual_2": "electricity bill money",
         "scientist_urdu": "اٹھارہ سو چوبیس میں فرانسیسی انجینئر سادی کارنو نے تھرمو ڈائنامکس کا وہ قانون دریافت کیا جس سے آج دنیا کے تمام اے سی اور فریج ٹھنڈک پیدا کرتے ہیں!",
         "scientist_cap1": "1824 KA THERMODYNAMICS",
         "scientist_cap2": "COOLING KA ASLI QANOON!",
-        "sci_visual_1": "thermodynamics heat transfer diagram",
-        "sci_visual_2": "air conditioner outdoor compressor unit",
+        "sci_visual_1": "physics laboratory",
+        "sci_visual_2": "air conditioning unit",
         "fact_urdu": "فزکس کہتی ہے کہ اے سی سولہ ڈگری کرنے سے کمرہ جلدی ٹھنڈا نہیں ہوتا، کیونکہ اے سی کی نالیوں سے نکلنے والی ہوا ہمیشہ ایک جیسی ٹھنڈی ہوتی ہے۔",
         "fact_cap1": "16 DEGREE SE KAMRA",
         "fact_cap2": "JALDI THANDA NAHI HOTA!",
-        "fact_visual_1": "air conditioner remote control 16",
-        "fact_visual_2": "cold air flow vent",
+        "fact_visual_1": "remote control",
+        "fact_visual_2": "ice cold frost",
         "scam_urdu": "جب آپ ریموٹ سولہ پر رکھتے ہیں تو انورٹر اے سی کا کمپریسر کبھی سلو نہیں ہوتا اور مہینے کے آخر میں پچاس ہزار کا بل آپ کے ہوش اڑا دیتا ہے!",
         "scam_cap1": "COMPRESSOR LAGATAR CHALTA HAI",
         "scam_cap2": "50,000 KA BIJLI BILL!",
-        "scam_visual_1": "spinning electric meter fast",
-        "scam_visual_2": "stressed man holding electricity bill",
-        "loss_visual_1": "burnt air conditioner circuit board",
-        "loss_visual_2": "counting money paying bill",
-        "vid_queries": ["air conditioner", "electric meter", "counting money"]
+        "scam_visual_1": "electricity meter",
+        "scam_visual_2": "stressed man headache",
+        "loss_visual_1": "electronic circuit board",
+        "loss_visual_2": "cash money",
+        "vid_queries": ["electricity", "money", "technology"]
     },
     {
         "topic": "Fridge ki gas har saal khatam hone ka mistri scam aur Closed Loop Physics",
         "tagline": "Fridge ki gas petrol ki tarah kabhi khatam nahi hoti! Mistri ke 5,000 ke choonay se bachein 🧊🔧",
         "description": "Fridge ka compressor ek sealed Closed-Loop system hota hai. Garmiyon mein aksar sirf 200 rupay ka relay ya capacitor kharab hota hai magar gas bharne ke naam par 5,000 le liye jate hain!",
         "badge": "FRIDGE GAS SCAM",
-        "hook_visual_1": "open refrigerator kitchen food",
-        "hook_visual_2": "appliance repairman tools kitchen",
+        "hook_visual_1": "refrigerator kitchen",
+        "hook_visual_2": "repairman tools",
         "scientist_urdu": "انیس سو تیس میں جب فریون گیس دریافت ہوئی تو انجینئرز نے فریج کے کمپریسر کو ایک مکمل سیل بند کلوزڈ لوپ سسٹم بنایا جس سے گیس کبھی ختم ہو ہی نہیں سکتی!",
         "scientist_cap1": "1930 KA CLOSED LOOP",
         "scientist_cap2": "GAS KABHI KHATAM NAHI HOTI!",
-        "sci_visual_1": "refrigerator back copper coils",
-        "sci_visual_2": "black refrigerator compressor motor",
+        "sci_visual_1": "copper pipes",
+        "sci_visual_2": "electric motor",
         "fact_urdu": "آئیڈیل گیس لا کے مطابق فریج کی گیس پٹرول کی طرح جلتی نہیں ہے، بلکہ وہ بیس سال تک انہی تانبے کے پائپوں میں گھوم کر ٹھنڈک بناتی رہتی ہے۔",
         "fact_cap1": "GAS JALTI NAHI HAI,",
         "fact_cap2": "20 SAAL PIPE MEIN GHOOMTI HAI!",
-        "fact_visual_1": "copper pipes frost ice",
-        "fact_visual_2": "pressure gauge manifold refrigerant",
+        "fact_visual_1": "ice cubes frost",
+        "fact_visual_2": "pressure gauge",
         "scam_urdu": "اکثر گرمیوں میں صرف دو سو روپے کا ریلے یا کیپیسٹر خراب ہوتا ہے، مگر کاریگر آ کر کہتا ہے باجی گیس اڑ گئی ہے اور پانچ ہزار روپے جیب میں ڈال لیتا ہے!",
         "scam_cap1": "200 KA RELAY KHARAB,",
         "scam_cap2": "5,000 GAS KA JHOOTA BILL!",
-        "scam_visual_1": "small electronic capacitor relay",
-        "scam_visual_2": "technician filling gas cylinder fridge",
-        "loss_visual_1": "welding copper pipe torch",
-        "loss_visual_2": "handing cash money repairman",
-        "vid_queries": ["refrigerator kitchen", "repairman tools", "copper pipes"]
+        "scam_visual_1": "electronics repair",
+        "scam_visual_2": "welding torch",
+        "loss_visual_1": "technician tools",
+        "loss_visual_2": "paying cash money",
+        "vid_queries": ["kitchen", "tools", "ice"]
     },
     {
         "topic": "Gaadi ke radiator mein saada paani dalne se engine tabah hone ki physics",
         "tagline": "Radiator mein saada paani dalna = 40,000 ke Head Gasket ka kharcha! 🚗💨",
         "description": "Saada paani 100 degree par ubal kar bhaap aur zang banata hai, jabke Coolant Raoult's Law ke tehat 130 degree tak engine ko safe rakhta hai.",
         "badge": "RADIATOR SCAM",
-        "hook_visual_1": "car hood smoke overheating",
-        "hook_visual_2": "pouring water car radiator",
+        "hook_visual_1": "car engine smoke",
+        "hook_visual_2": "pouring water car",
         "scientist_urdu": "اٹھارہ سو چھیاسی میں فرانسیسی کیمسٹ فرانسوا راؤلٹ نے ثابت کیا کہ خالص پانی میں گلائیکول کیمیکل ملانے سے اس کا ابلنے کا پوائنٹ حیرت انگیز طور پر بڑھ جاتا ہے!",
         "scientist_cap1": "1886 KA RAOULT'S LAW:",
         "scientist_cap2": "BOILING POINT KI PHYSICS!",
-        "sci_visual_1": "chemistry laboratory boiling flask",
-        "sci_visual_2": "green antifreeze coolant pouring",
+        "sci_visual_1": "chemistry lab",
+        "sci_visual_2": "motor oil liquid",
         "fact_urdu": "سادہ نلکے کا پانی سو ڈگری پر ابل کر بھاپ بن جاتا ہے اور لوہے کے انجن کو اندر سے زنگ لگا دیتا ہے، جبکہ اصلی کولنٹ ایک سو تیس ڈگری تک انجن بچاتا ہے۔",
         "fact_cap1": "SAADA PAANI = 100°C BHAAP",
         "fact_cap2": "AUR ENGINE MEIN ZANG!",
-        "fact_visual_1": "rusty corroded metal engine pipe",
-        "fact_visual_2": "car temperature gauge red hot",
+        "fact_visual_1": "rusty metal",
+        "fact_visual_2": "boiling water steam",
         "scam_urdu": "پٹرول پمپ اور ورکشاپ والے کہتے ہیں استاد جی سادہ پانی ڈالو سب چلتا ہے، اور چھ مہینے بعد ہیڈ گیسکٹ جلنے کا چالیس ہزار کا بل بن جاتا ہے!",
         "scam_cap1": "USTAAD KA SAADA PAANI",
         "scam_cap2": "40,000 HEAD GASKET KA BILL!",
-        "scam_visual_1": "auto mechanic car engine bay",
-        "scam_visual_2": "blown car head gasket repair",
-        "loss_visual_1": "car towed breakdown road",
-        "loss_visual_2": "expensive auto repair invoice",
-        "vid_queries": ["car engine smoke", "auto mechanic", "car radiator"]
+        "scam_visual_1": "auto mechanic car",
+        "scam_visual_2": "broken car engine",
+        "loss_visual_1": "car breakdown road",
+        "loss_visual_2": "counting money",
+        "vid_queries": ["car", "mechanic", "smoke"]
     },
     {
         "topic": "Solar panels par mitti jamne se 40% bijli gayab hone ka raaz aur Photoelectric Effect",
         "tagline": "Lakhon ka Solar System sirf 5 minute ki mitti saaf na karne se 40% bijli gawa deta hai! ☀️⚡",
         "description": "Einstein ke Photoelectric Effect aur Series Circuit physics ke mutabiq agar solar plate ke ek kone par bhi mitti jam jaye to poori string ka current gir jata hai.",
         "badge": "SOLAR PANEL LOGIC",
-        "hook_visual_1": "dusty dirty solar panels roof",
-        "hook_visual_2": "solar inverter screen low power",
+        "hook_visual_1": "solar panels roof",
+        "hook_visual_2": "electric power meter",
         "scientist_urdu": "انیس سو پانچ میں البرٹ آئن سٹائن نے فوٹو الیکٹرک ایفیکٹ دریافت کیا جس پر انہیں نوبل پرائز ملا، اور آج آپ کا سولر پینل اسی اصول پر دھوپ سے بجلی بناتا ہے!",
         "scientist_cap1": "1905 EINSTEIN NOBEL PRIZE:",
         "scientist_cap2": "PHOTOELECTRIC EFFECT!",
-        "sci_visual_1": "albert einstein physics chalkboard",
-        "sci_visual_2": "sunlight hitting solar panel cells",
+        "sci_visual_1": "physics blackboard",
+        "sci_visual_2": "sunlight solar panel",
         "fact_urdu": "فزکس کے مطابق سولر پلیٹ کے سیلز سیریز میں جڑے ہوتے ہیں۔ اگر ایک کونے پر بھی مٹی جم جائے تو وہ پورا سیل رکاوٹ بن کر تیس فیصد بجلی کھا جاتا ہے۔",
         "fact_cap1": "EK KONE PAR MITTI =",
         "fact_cap2": "30% BIJLI SEEDHA GAYAB!",
-        "fact_visual_1": "close up solar cell grid",
-        "fact_visual_2": "bird droppings dust solar panel",
+        "fact_visual_1": "solar cell",
+        "fact_visual_2": "dust storm sand",
         "scam_urdu": "لوگ لاکھوں روپے کا سولر لگوا کر مہینوں دھوتے نہیں اور پھر دکاندار کو گالیاں دیتے ہیں، حالانکہ قصور صرف پانچ منٹ پانی نہ مارنے کا ہوتا ہے!",
         "scam_cap1": "LAKHON KA SOLAR SYSTEM",
         "scam_cap2": "SIRF MITTI KI WAJA SE FAIL!",
-        "scam_visual_1": "washing solar panels with water hose",
-        "scam_visual_2": "shinning clean solar panels sun",
-        "loss_visual_1": "digital electric meter reading",
-        "loss_visual_2": "happy family bright home lights",
-        "vid_queries": ["solar panels", "sunlight sky", "washing glass"]
+        "scam_visual_1": "washing water spray",
+        "scam_visual_2": "clean solar energy",
+        "loss_visual_1": "battery charger",
+        "loss_visual_2": "bright light bulb",
+        "vid_queries": ["solar", "sunlight", "energy"]
     },
     {
         "topic": "Tyre mein hawa kam rakhne ka desi jugaar, petrol ki tabahi aur Rolling Friction",
         "tagline": "Tyre mein 5 point kam hawa rakhne se har mahine hazaroon ka extra petrol jalta hai! 🛞⛽",
         "description": "Coulomb ke Rolling Friction qanoon ke mutabiq kam hawa wala tyre sarak se chipak kar chalta hai jis se engine par 15% zyada load aur petrol kharch hota hai.",
         "badge": "TYRE PRESSURE LOGIC",
-        "hook_visual_1": "flat underinflated car tire road",
-        "hook_visual_2": "petrol pump fuel nozzle car",
+        "hook_visual_1": "car tire wheel",
+        "hook_visual_2": "petrol station fuel",
         "scientist_urdu": "سترہ سو ننانوے میں چارلس کولمب نے رگڑ یعنی فریکشن کے قوانین پیش کیے جن سے پتہ چلا کہ زمین اور پہیے کا ملاپ آپ کی گاڑی کے پٹرول کا فیصلہ کرتا ہے!",
         "scientist_cap1": "1799 COULOMB'S LAW:",
         "scientist_cap2": "ROLLING FRICTION KI SCIENCE!",
-        "sci_visual_1": "car tire tread gripping asphalt",
-        "sci_visual_2": "digital tire pressure gauge checking",
+        "sci_visual_1": "car wheel asphalt",
+        "sci_visual_2": "pressure gauge tire",
         "fact_urdu": "جب ٹائر میں ہوا صرف پانچ پوائنٹ کم ہوتی ہے تو رولنگ ریزسٹنس بڑھ جاتی ہے۔ ٹائر سڑک کے ساتھ چپک کر چلتا ہے اور انجن پندرہ فیصد زیادہ پٹرول پیتا ہے۔",
         "fact_cap1": "5 POINT KAM HAWA =",
         "fact_cap2": "15% ZYADA PETROL KI TABAHI!",
-        "fact_visual_1": "heavy car wheel rolling highway",
-        "fact_visual_2": "fuel gauge needle dropping empty",
+        "fact_visual_1": "highway road traffic",
+        "fact_visual_2": "car dashboard fuel",
         "scam_urdu": "ٹائر والا کہتا ہے بھائی ہوا کم رکھو جھٹکے نہیں لگیں گے، مگر اس آرام کے چکر میں ہر مہینے ہزاروں کا پٹرول جلتا ہے اور ٹائر جلدی پھٹ جاتا ہے!",
         "scam_cap1": "TYRE WALE KA MASHWARA",
         "scam_cap2": "AUR HAR MAHINE HAZAROON LOSS!",
-        "scam_visual_1": "roadside tire shop air pump",
-        "scam_visual_2": "damaged burst car tire sidewall",
-        "loss_visual_1": "buying new car tires shop",
-        "loss_visual_2": "counting money petrol station",
-        "vid_queries": ["car tire", "highway traffic", "petrol station"]
+        "scam_visual_1": "mechanic tire repair",
+        "scam_visual_2": "damaged car tire",
+        "loss_visual_1": "new car tires",
+        "loss_visual_2": "paying cash money",
+        "vid_queries": ["car", "traffic", "wheel"]
     }
 ]
 
@@ -246,7 +247,7 @@ def generate_script_data():
                 "caption_part1": "JAB TAK PHYSICS BALANCE HAI",
                 "caption_part2": "MACHINE MAKHAN CHALTI HAI!",
                 "search_query_1": chosen["sci_visual_2"],
-                "search_query_2": "smooth running engine gears",
+                "search_query_2": "metal gears machine",
                 "video_query": ""
             },
             {
@@ -261,7 +262,7 @@ def generate_script_data():
                 "tts_urdu": "دکاندار یا استاد بڑے پیار سے کہتا ہے کہ بھائی جان یہ سستا جگاڑ لگا لو، سب چلتا ہے، اور آپ تھوڑے سے پیسے بچانے کے چکر میں پھنس جاتے ہو!",
                 "caption_part1": "USTAAD KI MEETHI BAAT:",
                 "caption_part2": "'BHAI SAB CHALTA HAI!'",
-                "search_query_1": "street mechanic talking customer",
+                "search_query_1": "auto mechanic workshop",
                 "search_query_2": chosen["scam_visual_1"],
                 "video_query": ""
             },
@@ -270,7 +271,7 @@ def generate_script_data():
                 "caption_part1": "CHAND HAFTE BAAD",
                 "caption_part2": "ANDAR SE PURZAY TABAH!",
                 "search_query_1": chosen["loss_visual_1"],
-                "search_query_2": "sparks smoke broken machine",
+                "search_query_2": "fire sparks welding",
                 "video_query": ""
             },
             {
@@ -278,23 +279,23 @@ def generate_script_data():
                 "caption_part1": "500 BACHANE KE CHAKKAR MEIN",
                 "caption_part2": "15,000 KA FATKA LAGA!",
                 "search_query_1": chosen["loss_visual_2"],
-                "search_query_2": "man paying cash money",
+                "search_query_2": "paying cash money",
                 "video_query": ""
             },
             {
                 "tts_urdu": "ایلون مسک کے راکٹ سے لے کر آپ کے گھر کی عام مشینوں تک، ہر جگہ فزکس کا یہی پکا حساب چلتا ہے جو کسی دیسی جگاڑ کو معاف نہیں کرتا۔",
                 "caption_part1": "SPACE ROCKET SE LE KAR",
                 "caption_part2": "APKE GHAR KI MACHINE TAK!",
-                "search_query_1": "spacex rocket launch fire",
+                "search_query_1": "rocket launch space",
                 "search_query_2": chosen["hook_visual_1"],
-                "video_query": ""
+                "video_query": "rocket"
             },
             {
                 "tts_urdu": "فزکس کوئی بورڈ امتحان کا بورنگ نصاب نہیں بلکہ اس دنیا کا سورس کوڈ ہے! روزانہ ایسی اصلی لاجک سیکھنے کے لیے لاجک اور دھوکہ پیج کو ابھی فالو کر لو!",
                 "caption_part1": "LOGIC AUR DHOKA:",
                 "caption_part2": "ABHI FOLLOW DABAO! 🚀",
-                "search_query_1": "person holding smartphone screen",
-                "search_query_2": "glowing physics formulas brain",
+                "search_query_1": "smartphone social media",
+                "search_query_2": "technology brain network",
                 "video_query": ""
             }
         ]
@@ -303,8 +304,37 @@ def generate_script_data():
 USED_MEDIA_URLS = set()
 
 def fetch_contextual_stock_video(query, filename):
+    """Fetches HD Stock Video using Official PIXABAY_API_KEY first, then Mixkit fallback."""
     if not query:
         return None
+
+    # 1. Official Pixabay Video API
+    if PIXABAY_API_KEY:
+        try:
+            encoded = urllib.parse.quote(query.strip())
+            p_url = f"https://pixabay.com/api/videos/?key={PIXABAY_API_KEY}&q={encoded}&safesearch=true&per_page=15"
+            r = requests.get(p_url, headers=HEADERS, timeout=20)
+            if r.status_code == 200:
+                hits = r.json().get("hits", [])
+                for hit in hits:
+                    videos = hit.get("videos", {})
+                    vid_url = (
+                        videos.get("medium", {}).get("url")
+                        or videos.get("small", {}).get("url")
+                        or videos.get("large", {}).get("url")
+                    )
+                    if vid_url and vid_url not in USED_MEDIA_URLS:
+                        USED_MEDIA_URLS.add(vid_url)
+                        vr = requests.get(vid_url, headers=HEADERS, timeout=30)
+                        if vr.status_code == 200 and len(vr.content) > 50000:
+                            with open(filename, "wb") as f:
+                                f.write(vr.content)
+                            print(f"  [✓] Pixabay Stock Video downloaded for '{query}'")
+                            return filename
+        except Exception as e:
+            print(f"  [!] Pixabay video skip ({query}): {e}")
+
+    # 2. Mixkit Fallback
     slug = urllib.parse.quote(query.lower().strip())
     search_url = f"https://mixkit.co/free-stock-video/{slug}/"
     try:
@@ -319,12 +349,37 @@ def fetch_contextual_stock_video(query, filename):
                 if vid_resp.status_code == 200 and len(vid_resp.content) > 50000:
                     with open(filename, "wb") as f:
                         f.write(vid_resp.content)
+                    print(f"  [✓] Mixkit Stock Video downloaded for '{query}'")
                     return filename
     except Exception:
         pass
     return None
 
 def fetch_exact_scene_photo(query, filename):
+    """Fetches HD Stock Photo using Official PIXABAY_API_KEY first, then Bing HD fallback."""
+    # 1. Official Pixabay Image API
+    if PIXABAY_API_KEY:
+        try:
+            encoded = urllib.parse.quote(query.strip())
+            p_url = f"https://pixabay.com/api/?key={PIXABAY_API_KEY}&q={encoded}&image_type=photo&safesearch=true&per_page=15"
+            r = requests.get(p_url, headers=HEADERS, timeout=18)
+            if r.status_code == 200:
+                hits = r.json().get("hits", [])
+                for hit in hits:
+                    img_url = hit.get("largeImageURL") or hit.get("webformatURL")
+                    if img_url and img_url not in USED_MEDIA_URLS:
+                        USED_MEDIA_URLS.add(img_url)
+                        img_r = requests.get(img_url, headers=HEADERS, timeout=15)
+                        if img_r.status_code == 200 and len(img_r.content) > 15000:
+                            with open(filename, "wb") as f:
+                                f.write(img_r.content)
+                            if verify_and_grade_image(filename):
+                                print(f"  [✓] Pixabay HD Photo downloaded for '{query}'")
+                                return filename
+        except Exception as e:
+            print(f"  [!] Pixabay photo skip ({query}): {e}")
+
+    # 2. Bing HD Search Fallback
     try:
         encoded = urllib.parse.quote(f"{query} realistic photo")
         b_url = f"https://www.bing.com/images/async?q={encoded}&first=1&count=15&adlt=off&qft=+filterui:imagesize-large"
@@ -340,21 +395,10 @@ def fetch_exact_scene_photo(query, filename):
                         with open(filename, "wb") as f:
                             f.write(img_r.content)
                         if verify_and_grade_image(filename):
+                            print(f"  [✓] Bing HD Photo downloaded for '{query}'")
                             return filename
                 except Exception:
                     continue
-    except Exception:
-        pass
-
-    try:
-        prompt = urllib.parse.quote(f"cinematic photorealistic close up of {query}, dramatic lighting, 8k, vertical 9:16")
-        p_url = f"https://image.pollinations.ai/prompt/{prompt}?width=1080&height=1920&nologo=true&seed={random.randint(1,9999)}"
-        r = requests.get(p_url, headers=HEADERS, timeout=25)
-        if r.status_code == 200 and len(r.content) > 15000:
-            with open(filename, "wb") as f:
-                f.write(r.content)
-            if verify_and_grade_image(filename):
-                return filename
     except Exception:
         pass
 
@@ -581,7 +625,7 @@ def build_full_video(script_data):
     subprocess.run([
         "ffmpeg", "-y", "-f", "concat", "-safe", "0",
         "-i", "master_concat.txt",
-        "-c:v", "libx264", "-preset", "fast", "-crf", "21",
+        "-c:v", "libx264", "-preset", "fast", "-crf", "22",
         "-c:a", "aac", "-b:a", "192k",
         raw_output
     ], check=True)
@@ -608,16 +652,50 @@ def build_full_video(script_data):
     except Exception as e:
         print(f"BGM mixing skip: {e}")
 
-    return raw_output
+    # Copy raw_output to final_reel.mp4 so artifact backup always finds final_reel.mp4
+    subprocess.run(["cp", raw_output, final_output], check=False)
+    return final_output
+
+def resolve_fb_page_credentials():
+    """Automatically resolves numeric Page ID and Page Access Token even if a User Token was provided."""
+    page_id = FB_PAGE_ID
+    token = FB_ACCESS_TOKEN
+
+    # Extract numeric ID if full URL was pasted
+    m = re.search(r'(\d{8,})', page_id)
+    if m:
+        page_id = m.group(1)
+
+    try:
+        r = requests.get(
+            "https://graph.facebook.com/v20.0/me/accounts",
+            params={"access_token": token},
+            timeout=15
+        )
+        if r.status_code == 200:
+            pages = r.json().get("data", [])
+            if pages:
+                for p in pages:
+                    if p.get("id") == page_id or p.get("name", "").lower() in page_id.lower():
+                        print(f"  [✓] Matched Facebook Page: {p.get('name')} ({p.get('id')})")
+                        return p.get("id"), p.get("access_token", token)
+                # If only one page exists on the account, use it automatically
+                first_page = pages[0]
+                print(f"  [✓] Using Default Facebook Page: {first_page.get('name')} ({first_page.get('id')})")
+                return first_page.get("id"), first_page.get("access_token", token)
+    except Exception as e:
+        print(f"  [!] FB account check note: {e}")
+
+    return page_id, token
 
 def upload_to_facebook(video_path, script_data):
-    """Automatically publishes the video to the Facebook Page with Title, Tagline, Description & Viral Tags."""
     if not FB_ACCESS_TOKEN or not FB_PAGE_ID:
         print("⚠️ Facebook credentials missing in environment variables.")
-        return False, "FB Secrets not linked in .yml file"
+        return False, "FB Secrets missing"
 
-    print(f"🚀 Uploading Video to Facebook Page ({FB_PAGE_ID})...")
-    url = f"https://graph-video.facebook.com/v20.0/{FB_PAGE_ID}/videos"
+    page_id, page_token = resolve_fb_page_credentials()
+    print(f"🚀 Uploading Video to Facebook Page ID: {page_id}...")
+    url = f"https://graph-video.facebook.com/v20.0/{page_id}/videos"
 
     title = script_data.get("title", "Logic Aur Dhoka - Asli Physics!")
     tagline = script_data.get("tagline", "Physics koi boring syllabus nahi, is dunya ka Source Code hai!")
@@ -628,48 +706,64 @@ def upload_to_facebook(video_path, script_data):
         f"{title}\n\n"
         f"⚡ {tagline}\n\n"
         f"📌 {description}\n\n"
-        f"👉 Follow @LogicAurDhoka for daily real-world physics & scam alerts!\n\n"
+        f"👉 Follow Logic Aur Dhoka for daily real-world physics & scam alerts!\n\n"
         f"{hashtags}"
     )
 
     try:
         with open(video_path, "rb") as vf:
             payload = {
-                "access_token": FB_ACCESS_TOKEN,
+                "access_token": page_token,
                 "title": title,
                 "description": full_post_description
             }
             files = {"source": vf}
-            resp = requests.post(url, data=payload, files=files, timeout=180)
+            resp = requests.post(url, data=payload, files=files, timeout=240)
             print("Facebook API Status:", resp.status_code, resp.text)
             if resp.status_code == 200 and "id" in resp.json():
                 vid_id = resp.json()["id"]
-                return True, f"Published! (Video ID: {vid_id})"
-            return False, resp.text[:120]
+                return True, f"Published on FB! (Video ID: {vid_id})"
+            err_msg = resp.json().get("error", {}).get("message", resp.text[:140])
+            return False, f"FB Error: {err_msg}"
     except Exception as e:
-        print(f"Facebook Upload Error: {e}")
+        print(f"Facebook Upload Exception: {e}")
         return False, str(e)[:120]
 
 def send_to_telegram(video_path, script_data, fb_ok, fb_msg):
-    print("Uploading Reel & Status Report to Telegram...")
+    """100% Crash-Proof Telegram Upload (No Markdown parsing errors!)."""
+    print("📲 Uploading Reel & Status Report to Telegram...")
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendVideo"
-    fb_status_line = f"✅ *Facebook Auto-Post:* {fb_msg}" if fb_ok else f"⚠️ *Facebook Auto-Post:* {fb_msg}"
+    fb_status_line = f"✅ Facebook Auto-Post: {fb_msg}" if fb_ok else f"⚠️ Facebook Auto-Post: {fb_msg}"
 
     caption = (
-        f"🔥 *{script_data.get('title')}*\n\n"
-        f"⚡ *Tagline:* {script_data.get('tagline')}\n\n"
-        f"📝 *Description:* {script_data.get('description')}\n\n"
-        f"🏷️ *Viral Tags:*\n{script_data.get('hashtags')}\n\n"
+        f"🔥 {script_data.get('title')}\n\n"
+        f"⚡ Tagline:\n{script_data.get('tagline')}\n\n"
+        f"📝 Description:\n{script_data.get('description')}\n\n"
+        f"🏷️ Viral Tags:\n{script_data.get('hashtags')}\n\n"
         f"{fb_status_line}"
     )
+
+    # Telegram caption limit is 1024 characters
+    caption = caption[:1000]
+
     with open(video_path, "rb") as vf:
         resp = requests.post(
             url,
-            data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "Markdown"},
+            data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption},
             files={"video": vf},
-            timeout=120
+            timeout=180
         )
-        print("Telegram Status:", resp.status_code)
+        print("Telegram Upload Status:", resp.status_code, resp.text)
+
+    if resp.status_code != 200:
+        print("Retrying Telegram video upload without caption...")
+        with open(video_path, "rb") as vf:
+            requests.post(
+                url,
+                data={"chat_id": TELEGRAM_CHAT_ID},
+                files={"video": vf},
+                timeout=180
+            )
 
 if __name__ == "__main__":
     data = generate_script_data()
