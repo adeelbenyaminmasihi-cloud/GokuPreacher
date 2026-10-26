@@ -23,7 +23,6 @@ HEADERS = {
 USED_TOPICS_FILE = "used_topics.json"
 FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
-# Every topic now has scene-specific visual queries so EVERY cut matches the spoken words 100%
 ALL_TOPICS = [
     {
         "topic": "70cc aur 125cc bike mein petrol average barhane wale Carburetor mistri ka choona",
@@ -288,7 +287,6 @@ def generate_script_data():
 USED_MEDIA_URLS = set()
 
 def fetch_contextual_stock_video(query, filename):
-    """Fetches a highly relevant stock video from Mixkit only when query matches tightly."""
     if not query:
         return None
     slug = urllib.parse.quote(query.lower().strip())
@@ -299,20 +297,18 @@ def fetch_contextual_stock_video(query, filename):
             mp4_urls = re.findall(r'https://assets\.mixkit\.co/videos/[^\s"\'<>]+\.mp4', resp.text)
             fresh_urls = [u for u in mp4_urls if u not in USED_MEDIA_URLS]
             if fresh_urls:
-                chosen_url = fresh_urls[0] # Pick #1 most relevant result, not random!
+                chosen_url = fresh_urls[0]
                 USED_MEDIA_URLS.add(chosen_url)
                 vid_resp = requests.get(chosen_url, headers=HEADERS, timeout=25)
                 if vid_resp.status_code == 200 and len(vid_resp.content) > 50000:
                     with open(filename, "wb") as f:
                         f.write(vid_resp.content)
-                    print(f"  [✓] Exact Stock Video for '{query}': {chosen_url}")
                     return filename
-    except Exception as e:
-        print(f"  [!] Video skip ({query}): {e}")
+    except Exception:
+        pass
     return None
 
 def fetch_exact_scene_photo(query, filename):
-    """Fetches the TOP-RANKED exact matching photo from Bing Images HD for the specific phrase."""
     try:
         encoded = urllib.parse.quote(f"{query} realistic photo")
         b_url = f"https://www.bing.com/images/async?q={encoded}&first=1&count=15&adlt=off&qft=+filterui:imagesize-large"
@@ -320,7 +316,6 @@ def fetch_exact_scene_photo(query, filename):
         if r.status_code == 200:
             urls = re.findall(r'murl&quot;:&quot;(https?://[^&]+?\.(?:jpg|jpeg|png))&quot;', r.text)
             fresh = [u for u in urls if u not in USED_MEDIA_URLS]
-            # Pick from top 3 most accurate matches
             for img_url in fresh[:5]:
                 try:
                     USED_MEDIA_URLS.add(img_url)
@@ -329,14 +324,12 @@ def fetch_exact_scene_photo(query, filename):
                         with open(filename, "wb") as f:
                             f.write(img_r.content)
                         if verify_and_grade_image(filename):
-                            print(f"  [✓] Exact Scene Photo for '{query}'")
                             return filename
                 except Exception:
                     continue
-    except Exception as e:
-        print(f"  [!] Bing photo error ({query}): {e}")
+    except Exception:
+        pass
 
-    # Fallback to Pollinations AI Custom Scene Generator if Bing misses
     try:
         prompt = urllib.parse.quote(f"cinematic photorealistic close up of {query}, dramatic lighting, 8k, vertical 9:16")
         p_url = f"https://image.pollinations.ai/prompt/{prompt}?width=1080&height=1920&nologo=true&seed={random.randint(1,9999)}"
@@ -345,7 +338,6 @@ def fetch_exact_scene_photo(query, filename):
             with open(filename, "wb") as f:
                 f.write(r.content)
             if verify_and_grade_image(filename):
-                print(f"  [✓] Generated Custom AI Photo for '{query}'")
                 return filename
     except Exception:
         pass
@@ -369,14 +361,9 @@ def verify_and_grade_image(filepath):
         return False
 
 def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes, part_num):
-    """
-    100% Visible Direct HUD + High-Contrast Boxed Subtitles!
-    Draws a solid dark rounded box behind the Yellow/White text so captions are IMPOSSIBLE to miss.
-    """
     overlay = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Top and bottom dark gradients
     for y in range(280):
         alpha = int(170 * (1 - y / 280))
         draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
@@ -391,7 +378,6 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
         badge_font = ImageFont.load_default()
         cap_font = ImageFont.load_default()
 
-    # 1. Top Red Category Badge (Centered using standard getbbox for 100% compatibility)
     bw, bh = 620, 82
     bx, by = (1080 - bw) // 2, 95
     draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=41, fill=(220, 30, 30, 250), outline=(255, 255, 255, 240), width=4)
@@ -400,7 +386,6 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
     b_tw, b_th = b_bbox[2] - b_bbox[0], b_bbox[3] - b_bbox[1]
     draw.text((bx + (bw - b_tw) // 2, by + (bh - b_th) // 2 - 4), b_text, font=badge_font, fill=(255, 255, 255, 255))
 
-    # 2. Center-Bottom Viral Boxed Captions (Guaranteed visible on every device)
     lines = textwrap.wrap(caption_text.upper(), width=15)
     if not lines:
         lines = ["ASLI HAQEEQAT!"]
@@ -410,7 +395,6 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
     box_y1 = 1360 - (total_text_h // 2)
     box_y2 = box_y1 + total_text_h + 44
 
-    # High-contrast dark backdrop pill behind captions
     draw.rounded_rectangle([55, box_y1, 1025, box_y2], radius=28, fill=(10, 12, 18, 230), outline=(255, 215, 0, 220), width=4)
 
     for i, line in enumerate(lines):
@@ -419,18 +403,15 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
         tx = (1080 - tw) // 2
         ty = box_y1 + 20 + (i * line_height)
 
-        # Highlight color alternates between Part 1 (Yellow/White) and Part 2 (Neon Green/Yellow)
         if part_num == 1:
             fill_col = (255, 230, 0, 255) if i == 0 else (255, 255, 255, 255)
         else:
             fill_col = (0, 255, 150, 255) if i == 0 else (255, 230, 0, 255)
 
-        # Thick black shadow + bright foreground text
         for dx, dy in [(-4, -4), (4, -4), (-4, 4), (4, 4), (0, 5)]:
             draw.text((tx + dx, ty + dy), line, font=cap_font, fill=(0, 0, 0, 255))
         draw.text((tx, ty), line, font=cap_font, fill=fill_col)
 
-    # 3. Bottom Progress Bar
     progress_fraction = (scene_idx + (0.5 if part_num == 1 else 1.0)) / total_scenes
     prog_w = int(980 * progress_fraction)
     draw.rounded_rectangle([50, 1835, 1030, 1855], radius=10, fill=(255, 255, 255, 75))
@@ -533,7 +514,6 @@ def render_two_cut_scene(scene, idx, total_scenes, badge):
     q2 = scene["search_query_2"]
     v_q = scene.get("video_query", "")
 
-    # Only use stock video on specific action scenes where v_q is provided; otherwise use exact context photos!
     vid_file = fetch_contextual_stock_video(v_q, f"stock_vid_{idx}.mp4") if v_q else None
     if vid_file:
         media1, is_vid1 = vid_file, True
@@ -581,15 +561,41 @@ def build_full_video(script_data):
         for sf in scene_files:
             f.write(f"file '{sf}'\n")
 
-    final_output = "final_reel.mp4"
+    raw_output = "raw_reel.mp4"
     subprocess.run([
         "ffmpeg", "-y", "-f", "concat", "-safe", "0",
         "-i", "master_concat.txt",
         "-c:v", "libx264", "-preset", "fast", "-crf", "21",
         "-c:a", "aac", "-b:a", "192k",
-        final_output
+        raw_output
     ], check=True)
-    return final_output
+
+    # Add Cinematic Low-Volume Background Music (BGM) mixed under the Voiceover
+    print("🎵 Mixing Cinematic Background Music...")
+    final_output = "final_reel.mp4"
+    bgm_url = "https://actions.google.com/sounds/v1/ambiences/cyberpunk_drone.ogg"
+    try:
+        bgm_resp = requests.get(bgm_url, headers=HEADERS, timeout=20)
+        if bgm_resp.status_code == 200:
+            with open("bgm.ogg", "wb") as f:
+                f.write(bgm_resp.content)
+            
+            # Mix voiceover with very soft background music (BGM volume at 9%)
+            mix_cmd = [
+                "ffmpeg", "-y",
+                "-i", raw_output,
+                "-stream_loop", "-1", "-i", "bgm.ogg",
+                "-filter_complex", "[1:a]volume=0.09[bgm];[0:a][bgm]amix=inputs=2:duration=first:dropout_transition=2[a]",
+                "-map", "0:v", "-map", "[a]",
+                "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+                final_output
+            ]
+            subprocess.run(mix_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return final_output
+    except Exception as e:
+        print(f"BGM mixing skip: {e}")
+
+    return raw_output
 
 def send_to_telegram(video_path, script_data):
     print("Uploading Pro-Edited Reel to Telegram...")
@@ -598,7 +604,7 @@ def send_to_telegram(video_path, script_data):
         f"🔥 *{script_data.get('title')}*\n\n"
         f"📲 *Facebook Reels Caption:*\n{script_data.get('title')}\n"
         f"{script_data.get('hashtags', '#PhysicsLogic #ReelsPakistan')}\n\n"
-        f"✅ _Exact Scene Visuals | Boxed Pop Captions | Studio Urdu Voice_"
+        f"✅ _Exact Scene Visuals | Boxed Pop Captions | Cinematic BGM_"
     )
     with open(video_path, "rb") as vf:
         resp = requests.post(
