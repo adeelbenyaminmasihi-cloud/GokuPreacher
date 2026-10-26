@@ -224,4 +224,350 @@ def build_dynamic_script_for_topic(chosen):
                 "video_keyword": "money"
             },
             {
-                "tts_urdu": "دنیا بھر کے انجینئرز کروڑوں ڈالر لگا کر جو ڈیزائن بناتے ہیں، ہمار
+                "tts_urdu": "دنیا بھر کے انجینئرز کروڑوں ڈالر لگا کر جو ڈیزائن بناتے ہیں، ہمارا دیسی استاد ایک پیچ کس سے اس کا جنازہ نکال دیتا ہے۔",
+                "caption_part1": "ENGINEERS KI MEHNAT",
+                "caption_part2": "VS EK PECHKAS!",
+                "search_query_1": "engineer blueprint factory",
+                "search_query_2": "screwdriver repair",
+                "video_keyword": "technology"
+            },
+            {
+                "tts_urdu": "اس لیے اگلی بار کسی کے سستے جگاڑ میں آنے سے پہلے فزکس کا حساب ضرور لگانا تاکہ آپ کی حلال کی کمائی محفوظ رہے۔",
+                "caption_part1": "JUGAAR CHORO,",
+                "caption_part2": "ASLI LOGIC SAMJHO!",
+                "search_query_1": kw[3],
+                "search_query_2": "smart man thinking",
+                "video_keyword": "traffic"
+            },
+            {
+                "tts_urdu": "فزکس کوئی بورنگ کتاب نہیں بلکہ اس دنیا کا سورس کوڈ ہے! روزانہ ایسی اصلی لاجک سیکھنے کے لیے ابھی فالو کا بٹن دبا دو!",
+                "caption_part1": "DUNYA KA SOURCE CODE!",
+                "caption_part2": "ABHI FOLLOW KARO!",
+                "search_query_1": "futuristic technology hud",
+                "search_query_2": "social media smartphone",
+                "video_keyword": "phone"
+            }
+        ]
+    }
+
+USED_MEDIA_URLS = set()
+
+def fetch_real_stock_video(keyword, filename):
+    """Downloads a REAL HD Stock Video MP4 from Mixkit (No API key needed)."""
+    slug = urllib.parse.quote(keyword.lower().strip())
+    search_url = f"https://mixkit.co/free-stock-video/{slug}/"
+    try:
+        resp = requests.get(search_url, headers=HEADERS, timeout=20)
+        if resp.status_code == 200:
+            mp4_urls = re.findall(r'https://assets\.mixkit\.co/videos/[^\s"\'<>]+\.mp4', resp.text)
+            # Filter unused URLs
+            fresh_urls = [u for u in mp4_urls if u not in USED_MEDIA_URLS]
+            if not fresh_urls and mp4_urls:
+                fresh_urls = mp4_urls
+            if fresh_urls:
+                chosen_url = random.choice(fresh_urls[:10])
+                USED_MEDIA_URLS.add(chosen_url)
+                vid_resp = requests.get(chosen_url, headers=HEADERS, timeout=30)
+                if vid_resp.status_code == 200 and len(vid_resp.content) > 50000:
+                    with open(filename, "wb") as f:
+                        f.write(vid_resp.content)
+                    print(f"  [✓] Downloaded Real Stock Video: {chosen_url}")
+                    return filename
+    except Exception as e:
+        print(f"  [!] Mixkit video search skip ({keyword}): {e}")
+    return None
+
+def fetch_real_stock_photo(query, filename):
+    """Downloads a REAL Stock Photo from Unsplash NAPI or Bing Images HD (Zero purple/yellow fallbacks!)."""
+    # 1. Try Unsplash Public NAPI (High-Res Professional Photography)
+    try:
+        encoded = urllib.parse.quote(query)
+        u_url = f"https://unsplash.com/napi/search/photos?query={encoded}&per_page=15&orientation=portrait"
+        r = requests.get(u_url, headers=HEADERS, timeout=20)
+        if r.status_code == 200:
+            results = r.json().get("results", [])
+            photo_urls = [item["urls"]["regular"] for item in results if "urls" in item and "regular" in item["urls"]]
+            fresh = [u for u in photo_urls if u not in USED_MEDIA_URLS]
+            if not fresh and photo_urls:
+                fresh = photo_urls
+            for img_url in fresh[:5]:
+                USED_MEDIA_URLS.add(img_url)
+                img_r = requests.get(img_url, headers=HEADERS, timeout=20)
+                if img_r.status_code == 200 and len(img_r.content) > 15000:
+                    with open(filename, "wb") as f:
+                        f.write(img_r.content)
+                    if verify_and_prepare_image(filename):
+                        print(f"  [✓] Downloaded Unsplash HD Photo for '{query}'")
+                        return filename
+    except Exception as e:
+        print(f"  [!] Unsplash search skip ({query}): {e}")
+
+    # 2. Try Bing Images Async HD Search (Finds exact real-world objects/scenes)
+    try:
+        encoded = urllib.parse.quote(f"{query} high quality photography")
+        b_url = f"https://www.bing.com/images/async?q={encoded}&first=1&count=20&adlt=off"
+        r = requests.get(b_url, headers=HEADERS, timeout=20)
+        if r.status_code == 200:
+            urls = re.findall(r'murl&quot;:&quot;(https?://[^&]+?\.(?:jpg|jpeg|png))&quot;', r.text)
+            fresh = [u for u in urls if u not in USED_MEDIA_URLS]
+            for img_url in fresh[:8]:
+                try:
+                    USED_MEDIA_URLS.add(img_url)
+                    img_r = requests.get(img_url, headers=HEADERS, timeout=15)
+                    if img_r.status_code == 200 and len(img_r.content) > 15000:
+                        with open(filename, "wb") as f:
+                            f.write(img_r.content)
+                        if verify_and_prepare_image(filename):
+                            print(f"  [✓] Downloaded Bing Real Photo for '{query}'")
+                            return filename
+                except Exception:
+                    continue
+    except Exception as e:
+        print(f"  [!] Bing search skip ({query}): {e}")
+
+    # 3. Broad Unsplash fallback (e.g., "technology", "car", "money")
+    broad_url = f"https://unsplash.com/napi/search/photos?query=technology+mechanic&per_page=20"
+    r = requests.get(broad_url, headers=HEADERS, timeout=20)
+    results = r.json().get("results", [])
+    for item in results:
+        u = item["urls"]["regular"]
+        if u not in USED_MEDIA_URLS:
+            USED_MEDIA_URLS.add(u)
+            img_r = requests.get(u, headers=HEADERS, timeout=20)
+            with open(filename, "wb") as f:
+                f.write(img_r.content)
+            if verify_and_prepare_image(filename):
+                return filename
+    return filename
+
+def verify_and_prepare_image(filepath):
+    """Verifies image integrity and enhances contrast/color like a pro editor."""
+    try:
+        with Image.open(filepath) as im:
+            im = im.convert("RGB")
+            w, h = im.size
+            if w < 250 or h < 250:
+                return False
+            # Pro Color Grading: slight contrast and color saturation boost
+            im = ImageEnhance.Contrast(im).enhance(1.12)
+            im = ImageEnhance.Color(im).enhance(1.18)
+            im.save(filepath, "JPEG", quality=92)
+        return True
+    except Exception:
+        return False
+
+def create_caption_overlay(caption_text, badge_text, scene_idx, total_scenes, part_num):
+    """Creates crisp Hormozi-style pop-up caption overlay PNG."""
+    overlay = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+
+    # Subtle top & bottom cinematic shadow vignette
+    for y in range(320):
+        alpha = int(175 * (1 - y / 320))
+        draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
+    for y in range(1250, 1920):
+        alpha = int(230 * ((y - 1250) / 670))
+        draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
+
+    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    try:
+        badge_font = ImageFont.truetype(font_path, 36)
+        cap_font = ImageFont.truetype(font_path, 72)
+    except Exception:
+        badge_font = ImageFont.load_default()
+        cap_font = ImageFont.load_default()
+
+    # Top Red/Gold Category Pill
+    bw, bh = 560, 74
+    bx, by = (1080 - bw) // 2, 105
+    draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=37, fill=(220, 38, 38, 245), outline=(255, 255, 255, 230), width=3)
+    draw.text((540, by + bh // 2), badge_text.upper(), font=badge_font, fill=(255, 255, 255, 255), anchor="mm")
+
+    # Dynamic Pop Caption Box
+    lines = textwrap.wrap(caption_text.upper(), width=16)
+    y_start = 1470 - (len(lines) * 48)
+
+    for i, line in enumerate(lines):
+        y_pos = y_start + i * 100
+        # Part 1 pops in Bright Yellow/White, Part 2 pops in Cyber Green/Yellow
+        if part_num == 1:
+            color = (255, 230, 0, 255) if i % 2 == 0 else (255, 255, 255, 255)
+        else:
+            color = (0, 255, 163, 255) if i % 2 == 0 else (255, 255, 255, 255)
+
+        draw.text((540, y_pos), line, font=cap_font, fill=color, anchor="mm", stroke_width=12, stroke_fill=(0, 0, 0, 255))
+
+    # Smooth Progress Bar at Bottom
+    progress_fraction = (scene_idx + (0.5 if part_num == 1 else 1.0)) / total_scenes
+    prog_w = int(1000 * progress_fraction)
+    draw.rounded_rectangle([40, 1845, 1040, 1863], radius=9, fill=(255, 255, 255, 65))
+    draw.rounded_rectangle([40, 1845, 40 + max(prog_w, 20), 1863], radius=9, fill=(255, 215, 0, 255))
+
+    out_png = f"overlay_{scene_idx}_p{part_num}.png"
+    overlay.save(out_png)
+    return out_png
+
+async def synthesize_scene_voice(urdu_text, index):
+    raw_audio = f"raw_voice_{index}.mp3"
+    mastered_audio = f"voice_{index}.m4a"
+
+    communicate = edge_tts.Communicate(urdu_text, voice="ur-PK-AsadNeural", rate="+14%", pitch="-2Hz")
+    await communicate.save(raw_audio)
+
+    af_chain = (
+        "silenceremove=start_periods=1:start_silence=0.04:start_threshold=-45dB,"
+        "highpass=f=75,"
+        "bass=g=4:f=110,"
+        "treble=g=3:f=4500,"
+        "acompressor=threshold=-16dB:ratio=3:attack=5:release=60:makeup=3dB,"
+        "apad=pad_dur=0.15"
+    )
+    subprocess.run([
+        "ffmpeg", "-y", "-i", raw_audio,
+        "-af", af_chain,
+        "-ar", "44100", "-ac", "2", "-c:a", "aac", "-b:a", "192k",
+        mastered_audio
+    ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return mastered_audio
+
+def get_audio_duration(audio_path):
+    out = subprocess.check_output([
+        "ffprobe", "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        audio_path
+    ]).decode().strip()
+    return max(float(out), 3.0)
+
+def prepare_visual_subclip(media_path, is_video, overlay_path, duration, sub_idx, out_clip):
+    """Renders a 2.5s - 3s B-roll shot with dynamic camera zoom/pan and caption overlay."""
+    if is_video:
+        # Real moving Stock Video B-Roll cropped to 9:16 vertical + overlay
+        vf = (
+            "[0:v]scale=1080:1920:force_original_aspect_ratio=increase,"
+            "crop=1080:1920,eq=contrast=1.08:saturation=1.15[bg];"
+            "[bg][1:v]overlay=0:0,format=yuv420p[v]"
+        )
+        cmd = [
+            "ffmpeg", "-y",
+            "-stream_loop", "-1", "-t", str(duration), "-i", media_path,
+            "-loop", "1", "-t", str(duration), "-i", overlay_path,
+            "-filter_complex", vf,
+            "-map", "[v]", "-r", "24", "-an",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+            out_clip
+        ]
+    else:
+        # High-Res Real Stock Photo with dynamic punch-in / pan motion
+        zoom_expr = f"1.0+0.12*(t/{duration})" if sub_idx % 2 == 0 else f"1.12-0.10*(t/{duration})"
+        vf = (
+            f"[0:v]scale=1350:2400:force_original_aspect_ratio=increase,crop=1350:2400,"
+            f"crop=w='1080/{zoom_expr}':h='1920/{zoom_expr}':x='(in_w-out_w)/2':y='(in_h-out_h)/2',"
+            f"scale=1080:1920[bg];"
+            f"[bg][1:v]overlay=0:0,format=yuv420p[v]"
+        )
+        cmd = [
+            "ffmpeg", "-y",
+            "-loop", "1", "-t", str(duration), "-i", media_path,
+            "-loop", "1", "-t", str(duration), "-i", overlay_path,
+            "-filter_complex", vf,
+            "-map", "[v]", "-r", "24", "-an",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+            out_clip
+        ]
+    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+def render_two_cut_scene(scene, idx, total_scenes, badge):
+    """Splits each scene into 2 rapid visual cuts (Shot A + Shot B) synced to the full Urdu voiceover."""
+    audio_path = asyncio.run(synthesize_scene_voice(scene["tts_urdu"], idx))
+    total_dur = get_audio_duration(audio_path)
+    half_dur = round(total_dur / 2.0, 2)
+    rem_dur = round(total_dur - half_dur, 2)
+
+    q1 = scene.get("search_query_1", "car mechanic")
+    q2 = scene.get("search_query_2", "counting money")
+    v_kw = scene.get("video_keyword", "mechanic")
+
+    # Shot 1: Try Real Stock Video MP4 first, else Real HD Photo
+    vid_file = fetch_real_stock_video(v_kw, f"stock_vid_{idx}.mp4")
+    if vid_file:
+        media1, is_vid1 = vid_file, True
+    else:
+        media1 = fetch_real_stock_photo(q1, f"photo_{idx}_1.jpg")
+        is_vid1 = False
+
+    # Shot 2: Always a specific Real HD Photo matching the second half of the sentence
+    media2 = fetch_real_stock_photo(q2, f"photo_{idx}_2.jpg")
+
+    ov1 = create_caption_overlay(scene.get("caption_part1", "ASLI HAQEEQAT"), badge, idx, total_scenes, 1)
+    ov2 = create_caption_overlay(scene.get("caption_part2", "DEKHO KAISE!"), badge, idx, total_scenes, 2)
+
+    sub1 = f"sub_{idx}_1.mp4"
+    sub2 = f"sub_{idx}_2.mp4"
+    prepare_visual_subclip(media1, is_vid1, ov1, half_dur, 0, sub1)
+    prepare_visual_subclip(media2, False, ov2, rem_dur, 1, sub2)
+
+    # Combine Shot 1 + Shot 2 + Scene Voiceover seamlessly
+    list_file = f"scene_list_{idx}.txt"
+    with open(list_file, "w") as f:
+        f.write(f"file '{sub1}'\nfile '{sub2}'\n")
+
+    scene_out = f"scene_final_{idx}.mp4"
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-f", "concat", "-safe", "0", "-i", list_file,
+        "-i", audio_path,
+        "-map", "0:v", "-map", "1:a",
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
+        "-c:a", "copy", "-shortest",
+        scene_out
+    ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return scene_out
+
+def build_full_video(script_data):
+    scenes = script_data["scenes"]
+    badge = script_data.get("category_badge", "PHYSICS VS CHOONA")
+    scene_files = []
+
+    for idx, scene in enumerate(scenes):
+        print(f"🎬 Editing Scene {idx+1}/{len(scenes)} (2 Fast Cuts)...")
+        s_file = render_two_cut_scene(scene, idx, len(scenes), badge)
+        scene_files.append(s_file)
+
+    with open("master_concat.txt", "w") as f:
+        for sf in scene_files:
+            f.write(f"file '{sf}'\n")
+
+    final_output = "final_reel.mp4"
+    subprocess.run([
+        "ffmpeg", "-y", "-f", "concat", "-safe", "0",
+        "-i", "master_concat.txt",
+        "-c:v", "libx264", "-preset", "fast", "-crf", "21",
+        "-c:a", "aac", "-b:a", "192k",
+        final_output
+    ], check=True)
+    return final_output
+
+def send_to_telegram(video_path, script_data):
+    print("Uploading Pro-Edited Reel to Telegram...")
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendVideo"
+    caption = (
+        f"🔥 *{script_data.get('title')}*\n\n"
+        f"📲 *Facebook Reels Caption:*\n{script_data.get('title')}\n"
+        f"{script_data.get('hashtags', '#PhysicsLogic #ReelsPakistan')}\n\n"
+        f"✅ _20 Real Stock Cuts | 1080p Vertical | Studio Urdu Voice_"
+    )
+    with open(video_path, "rb") as vf:
+        resp = requests.post(
+            url,
+            data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "Markdown"},
+            files={"video": vf},
+            timeout=120
+        )
+        print("Telegram Status:", resp.status_code)
+
+if __name__ == "__main__":
+    data = generate_script_data()
+    print("Video Title:", data.get("title"))
+    final_vid = build_full_video(data)
+    send_to_telegram(final_vid, data)
