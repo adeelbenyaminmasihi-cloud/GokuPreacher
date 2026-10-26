@@ -1,45 +1,54 @@
 import os
 import asyncio
+import subprocess
+import requests
 import google.generativeai as genai
 import edge_tts
-from moviepy.editor import AudioFileClip, ColorClip
-import requests
 
-# Secrets fetch from environment
+# Environment secrets fetch
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-genai.configure(api_key=GEMINI_API_KEY)
-
 def generate_script():
     print("Generating script using Gemini...")
-    # Using standard gemini model
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    prompt = """
-    Write a short, engaging 50-second direct-to-camera short video script in Roman Urdu about a real-world physics fact or an everyday scam (like mobile chargers, fuel average, or engine oil) that has a shocking hook, a story/fact, a direct pocket impact, and a call to action. Keep it punchy and energetic. Do not include timestamps, just the spoken words.
-    """
-    response = model.generate_content(prompt)
-    return response.text
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = """
+        Write a short, engaging 45-second direct-to-camera short video script in Roman Urdu about a real-world physics fact or an everyday scam (like mobile chargers, fuel average myths, or engine oil) that has a shocking hook, a story/fact, a direct pocket impact, and a call to action. Keep it punchy and energetic. Do not include timestamps, just the spoken words.
+        """
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"Error in Gemini: {e}")
+        # Fallback script in case of API issue
+        return "Mechanic har do mahine baad aapko choona kaise lagata hai? Aur hairat ki baat ye hai ke isme ghalti mechanic ki nahi, aapki physics ki hai! Sardi mein jab aap mota oil dalte ho toh engine start par do guna zor lagata hai. Agli dafa mechanic ke paas jao toh oil ka grade zaroor check karna. Roz aisi real-world logic sikhne ke liye follow ka button daba do!"
 
 async def generate_audio(text):
     print("Converting text to speech (Urdu)...")
-    voice = "ur-PK-AsadNeural" # Natural Urdu male voice
+    voice = "ur-PK-AsadNeural"
     communicate = edge_tts.Communicate(text, voice)
     await communicate.save("voiceover.mp3")
 
 def create_video():
-    print("Rendering video...")
-    audio_clip = AudioFileClip("voiceover.mp3")
-    duration = audio_clip.duration
-
-    # Create a vertical background (Reels/TikTok format: 1080x1920)
-    bg_clip = ColorClip(size=(1080, 1920), color=(20, 20, 20), duration=duration)
-    
-    video = bg_clip.set_audio(audio_clip)
-    
+    print("Rendering video using FFmpeg...")
     output_file = "output_video.mp4"
-    video.write_videofile(output_file, fps=24, codec="libx264", audio_codec="aac")
+    
+    # 1080x1920 (Reels / Shorts format), 24 fps, clean dark background
+    cmd = [
+        "ffmpeg", "-y",
+        "-f", "lavfi", "-i", "color=c=0x141414:s=1080x1920:r=24",
+        "-i", "voiceover.mp3",
+        "-c:v", "libx264",
+        "-tune", "stillimage",
+        "-c:a", "aac",
+        "-b:a", "192k",
+        "-pix_fmt", "yuv420p",
+        "-shortest",
+        output_file
+    ]
+    subprocess.run(cmd, check=True)
     return output_file
 
 def send_to_telegram(video_path):
