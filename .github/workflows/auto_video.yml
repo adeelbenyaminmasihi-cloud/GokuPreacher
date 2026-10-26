@@ -2,9 +2,11 @@ name: Automated Urdu Video Generator
 
 on:
   schedule:
-    # Rozana 3 Videos (Pakistan Time: Subah 9:00, Dopehar 3:00, Raat 9:00)
     - cron: '0 4,10,16 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-video:
@@ -34,3 +36,11 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           python main.py
+
+      - name: Save Used Topics Memory
+        run: |
+          git config --global user.name "Video Employee Bot"
+          git config --global user.email "bot@github.com"
+          git add used_topics.json || true
+          git diff --staged --quiet || git commit -m "Remember used video topic"
+          git push || true
