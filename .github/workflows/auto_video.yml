@@ -1,46 +1,92 @@
-name: Automated Urdu Video Generator
+name: Video Employee Bot
 
 on:
-  schedule:
-    - cron: '0 4,10,16 * * *'
   workflow_dispatch:
+  schedule:
+    # Runs daily at 20:00 Pakistan Standard Time (15:00 UTC).
+    - cron: '0 15 * * *'
 
 permissions:
   contents: write
 
+concurrency:
+  group: video-employee-bot-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-video:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      PYTHONUNBUFFERED: '1'
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ vars.GEMINI_MODEL || 'gemini-3.8-flash' }}
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      GOOGLE_TTS_API_KEY: ${{ secrets.GOOGLE_TTS_API_KEY }}
+      GOOGLE_TTS_VOICE: ${{ vars.GOOGLE_TTS_VOICE || 'ur-IN-Chirp3-HD-Charon' }}
+      TTS_PROVIDER: ${{ vars.TTS_PROVIDER || 'auto' }}
+      TTS_VOICE: ${{ vars.TTS_VOICE || 'ur-PK-AsadNeural' }}
+      TTS_RATE: ${{ vars.TTS_RATE || '-3%' }}
+      TTS_PITCH: ${{ vars.TTS_PITCH || '-1Hz' }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      OUTPUT_DIR: output
+      USED_TOPICS_FILE: used_topics.json
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
 
-      - name: Install FFmpeg and Fonts
+      - name: Install FFmpeg and Urdu fonts
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg fontconfig fonts-nafees fonts-noto-core fonts-dejavu-core fonts-liberation2
+          fc-cache -f
+          ffmpeg -hide_banner -filters | grep -E ' subtitles | ass ' || true
+          ffprobe -version | head -n 1
 
-      - name: Install Python Libraries
+      - name: Install Python libraries
         run: |
-          pip install --no-cache-dir edge-tts requests pillow
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Validate Python syntax
+        run: python -m py_compile main.py
 
       - name: Run Video Generator Employee
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          python main.py
+        run: python -u main.py
 
       - name: Save Used Topics Memory
+        if: success()
         run: |
-          git config --global user.name "Video Employee Bot"
-          git config --global user.email "bot@github.com"
-          git add used_topics.json || true
-          git diff --staged --quiet || git commit -m "Remember used video topic"
-          git push || true
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add used_topics.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Remember used video topic [skip ci]'
+            git push
+          else
+            echo 'No used-topics changes to save.'
+          fi
+
+      - name: Upload generated video and script manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-reel-${{ github.run_number }}
+          path: |
+            output/*.mp4
+            output/*.json
+          if-no-files-found: warn
+          retention-days: 7
