@@ -2,7 +2,7 @@ import os
 import asyncio
 import google.generativeai as genai
 import edge_tts
-from moviepy.editor import TextClip, AudioFileClip, ColorClip, CompositeVideoClip
+from moviepy.editor import AudioFileClip, ColorClip
 import requests
 
 # Secrets fetch from environment
@@ -14,7 +14,8 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 def generate_script():
     print("Generating script using Gemini...")
-    model = genai.GenerativeModel('gemini-pro')
+    # Using standard gemini model
+    model = genai.GenerativeModel('gemini-1.5-flash')
     prompt = """
     Write a short, engaging 50-second direct-to-camera short video script in Roman Urdu about a real-world physics fact or an everyday scam (like mobile chargers, fuel average, or engine oil) that has a shocking hook, a story/fact, a direct pocket impact, and a call to action. Keep it punchy and energetic. Do not include timestamps, just the spoken words.
     """
@@ -35,8 +36,6 @@ def create_video():
     # Create a vertical background (Reels/TikTok format: 1080x1920)
     bg_clip = ColorClip(size=(1080, 1920), color=(20, 20, 20), duration=duration)
     
-    # Add simple text overlay or keep it clean with background
-    # (MoviePy text rendering requires ImageMagick, so we use a safe solid color background with audio)
     video = bg_clip.set_audio(audio_clip)
     
     output_file = "output_video.mp4"
