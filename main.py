@@ -13,6 +13,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+FB_ACCESS_TOKEN = os.environ.get("FACEBOOK_PAGE_ACCESS_TOKEN", "").strip()
+FB_PAGE_ID = os.environ.get("FACEBOOK_PAGE_ID", "").strip()
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -23,10 +25,11 @@ HEADERS = {
 USED_TOPICS_FILE = "used_topics.json"
 FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
-# Every topic now has scene-specific visual queries so EVERY cut matches the spoken words 100%
 ALL_TOPICS = [
     {
         "topic": "70cc aur 125cc bike mein petrol average barhane wale Carburetor mistri ka choona",
+        "tagline": "Mistri ka ek pechkas aap ke engine ka 15,000 ka kharcha kaise nikalta hai? 🛠️🔥",
+        "description": "Jab mistri carburetor ka jet band karta hai to petrol bachne ke bajaye engine overheat ho kar piston aur valves jala deta hai. Asli Stoichiometric Ratio aur Bernoulli Physics samjhein!",
         "badge": "BIKE PETROL SCAM",
         "hook_visual_1": "motorcycle fuel tank petrol",
         "hook_visual_2": "counting cash money hand",
@@ -51,6 +54,8 @@ ALL_TOPICS = [
     },
     {
         "topic": "Inverter AC ko 16 degree par chalane ka nuqsan aur Thermodynamics ka qanoon",
+        "tagline": "AC ko 16 degree par rakhنے se kamra jaldi thanda nahi hota, sirf 50,000 ka bill aata hai! ❄️💸",
+        "description": "Thermodynamics ke mutabiq AC ki grill se nikalne wali hawa hamesha ek jaisi thandi hoti hai. 16 degree par compressor kabhi trip nahi karta aur bijli ka bill double ho jata hai!",
         "badge": "AC BILL CHOONA",
         "hook_visual_1": "air conditioner cooling room",
         "hook_visual_2": "high electricity bill shocked man",
@@ -75,6 +80,8 @@ ALL_TOPICS = [
     },
     {
         "topic": "Fridge ki gas har saal khatam hone ka mistri scam aur Closed Loop Physics",
+        "tagline": "Fridge ki gas petrol ki tarah kabhi khatam nahi hoti! Mistri ke 5,000 ke choonay se bachein 🧊🔧",
+        "description": "Fridge ka compressor ek sealed Closed-Loop system hota hai. Garmiyon mein aksar sirf 200 rupay ka relay ya capacitor kharab hota hai magar gas bharne ke naam par 5,000 le liye jate hain!",
         "badge": "FRIDGE GAS SCAM",
         "hook_visual_1": "open refrigerator kitchen food",
         "hook_visual_2": "appliance repairman tools kitchen",
@@ -99,6 +106,8 @@ ALL_TOPICS = [
     },
     {
         "topic": "Gaadi ke radiator mein saada paani dalne se engine tabah hone ki physics",
+        "tagline": "Radiator mein saada paani dalna = 40,000 ke Head Gasket ka kharcha! 🚗💨",
+        "description": "Saada paani 100 degree par ubal kar bhaap aur zang banata hai, jabke Coolant Raoult's Law ke tehat 130 degree tak engine ko safe rakhta hai.",
         "badge": "RADIATOR SCAM",
         "hook_visual_1": "car hood smoke overheating",
         "hook_visual_2": "pouring water car radiator",
@@ -123,6 +132,8 @@ ALL_TOPICS = [
     },
     {
         "topic": "Solar panels par mitti jamne se 40% bijli gayab hone ka raaz aur Photoelectric Effect",
+        "tagline": "Lakhon ka Solar System sirf 5 minute ki mitti saaf na karne se 40% bijli gawa deta hai! ☀️⚡",
+        "description": "Einstein ke Photoelectric Effect aur Series Circuit physics ke mutabiq agar solar plate ke ek kone par bhi mitti jam jaye to poori string ka current gir jata hai.",
         "badge": "SOLAR PANEL LOGIC",
         "hook_visual_1": "dusty dirty solar panels roof",
         "hook_visual_2": "solar inverter screen low power",
@@ -147,6 +158,8 @@ ALL_TOPICS = [
     },
     {
         "topic": "Tyre mein hawa kam rakhne ka desi jugaar, petrol ki tabahi aur Rolling Friction",
+        "tagline": "Tyre mein 5 point kam hawa rakhne se har mahine hazaroon ka extra petrol jalta hai! 🛞⛽",
+        "description": "Coulomb ke Rolling Friction qanoon ke mutabiq kam hawa wala tyre sarak se chipak kar chalta hai jis se engine par 15% zyada load aur petrol kharch hota hai.",
         "badge": "TYRE PRESSURE LOGIC",
         "hook_visual_1": "flat underinflated car tire road",
         "hook_visual_2": "petrol pump fuel nozzle car",
@@ -198,8 +211,10 @@ def generate_script_data():
     print(f"🔥 Building Scene-Matched Script for: {topic}")
 
     return {
-        "title": f"{topic} - Asli Physics!",
-        "hashtags": "#PhysicsLogic #DesiScam #PakistaniReels #ScienceUrdu #DimaagKholo",
+        "title": f"🧠 {topic} | Logic Aur Dhoka",
+        "tagline": chosen["tagline"],
+        "description": chosen["description"],
+        "hashtags": "#LogicAurDhoka #PhysicsLogic #DesiScam #UrduFacts #ReelsPakistan #DimaagKholo #ScienceUrdu #ViralReels",
         "category_badge": badge,
         "scenes": [
             {
@@ -275,8 +290,8 @@ def generate_script_data():
                 "video_query": ""
             },
             {
-                "tts_urdu": "فزکس کوئی بورڈ امتحان کا بورنگ نصاب نہیں بلکہ اس دنیا کا سورس کوڈ ہے! روزانہ ایسی اصلی لاجک سیکھنے کے لیے ابھی فالو کا بٹن دبا دو!",
-                "caption_part1": "DUNYA KA SOURCE CODE!",
+                "tts_urdu": "فزکس کوئی بورڈ امتحان کا بورنگ نصاب نہیں بلکہ اس دنیا کا سورس کوڈ ہے! روزانہ ایسی اصلی لاجک سیکھنے کے لیے لاجک اور دھوکہ پیج کو ابھی فالو کر لو!",
+                "caption_part1": "LOGIC AUR DHOKA:",
                 "caption_part2": "ABHI FOLLOW DABAO! 🚀",
                 "search_query_1": "person holding smartphone screen",
                 "search_query_2": "glowing physics formulas brain",
@@ -288,7 +303,6 @@ def generate_script_data():
 USED_MEDIA_URLS = set()
 
 def fetch_contextual_stock_video(query, filename):
-    """Fetches a highly relevant stock video from Mixkit only when query matches tightly."""
     if not query:
         return None
     slug = urllib.parse.quote(query.lower().strip())
@@ -299,20 +313,18 @@ def fetch_contextual_stock_video(query, filename):
             mp4_urls = re.findall(r'https://assets\.mixkit\.co/videos/[^\s"\'<>]+\.mp4', resp.text)
             fresh_urls = [u for u in mp4_urls if u not in USED_MEDIA_URLS]
             if fresh_urls:
-                chosen_url = fresh_urls[0] # Pick #1 most relevant result, not random!
+                chosen_url = fresh_urls[0]
                 USED_MEDIA_URLS.add(chosen_url)
                 vid_resp = requests.get(chosen_url, headers=HEADERS, timeout=25)
                 if vid_resp.status_code == 200 and len(vid_resp.content) > 50000:
                     with open(filename, "wb") as f:
                         f.write(vid_resp.content)
-                    print(f"  [✓] Exact Stock Video for '{query}': {chosen_url}")
                     return filename
-    except Exception as e:
-        print(f"  [!] Video skip ({query}): {e}")
+    except Exception:
+        pass
     return None
 
 def fetch_exact_scene_photo(query, filename):
-    """Fetches the TOP-RANKED exact matching photo from Bing Images HD for the specific phrase."""
     try:
         encoded = urllib.parse.quote(f"{query} realistic photo")
         b_url = f"https://www.bing.com/images/async?q={encoded}&first=1&count=15&adlt=off&qft=+filterui:imagesize-large"
@@ -320,7 +332,6 @@ def fetch_exact_scene_photo(query, filename):
         if r.status_code == 200:
             urls = re.findall(r'murl&quot;:&quot;(https?://[^&]+?\.(?:jpg|jpeg|png))&quot;', r.text)
             fresh = [u for u in urls if u not in USED_MEDIA_URLS]
-            # Pick from top 3 most accurate matches
             for img_url in fresh[:5]:
                 try:
                     USED_MEDIA_URLS.add(img_url)
@@ -329,14 +340,12 @@ def fetch_exact_scene_photo(query, filename):
                         with open(filename, "wb") as f:
                             f.write(img_r.content)
                         if verify_and_grade_image(filename):
-                            print(f"  [✓] Exact Scene Photo for '{query}'")
                             return filename
                 except Exception:
                     continue
-    except Exception as e:
-        print(f"  [!] Bing photo error ({query}): {e}")
+    except Exception:
+        pass
 
-    # Fallback to Pollinations AI Custom Scene Generator if Bing misses
     try:
         prompt = urllib.parse.quote(f"cinematic photorealistic close up of {query}, dramatic lighting, 8k, vertical 9:16")
         p_url = f"https://image.pollinations.ai/prompt/{prompt}?width=1080&height=1920&nologo=true&seed={random.randint(1,9999)}"
@@ -345,7 +354,6 @@ def fetch_exact_scene_photo(query, filename):
             with open(filename, "wb") as f:
                 f.write(r.content)
             if verify_and_grade_image(filename):
-                print(f"  [✓] Generated Custom AI Photo for '{query}'")
                 return filename
     except Exception:
         pass
@@ -369,14 +377,9 @@ def verify_and_grade_image(filepath):
         return False
 
 def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes, part_num):
-    """
-    100% Visible Direct HUD + High-Contrast Boxed Subtitles!
-    Draws a solid dark rounded box behind the Yellow/White text so captions are IMPOSSIBLE to miss.
-    """
     overlay = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Top and bottom dark gradients
     for y in range(280):
         alpha = int(170 * (1 - y / 280))
         draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
@@ -391,7 +394,6 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
         badge_font = ImageFont.load_default()
         cap_font = ImageFont.load_default()
 
-    # 1. Top Red Category Badge (Centered using standard getbbox for 100% compatibility)
     bw, bh = 620, 82
     bx, by = (1080 - bw) // 2, 95
     draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=41, fill=(220, 30, 30, 250), outline=(255, 255, 255, 240), width=4)
@@ -400,7 +402,6 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
     b_tw, b_th = b_bbox[2] - b_bbox[0], b_bbox[3] - b_bbox[1]
     draw.text((bx + (bw - b_tw) // 2, by + (bh - b_th) // 2 - 4), b_text, font=badge_font, fill=(255, 255, 255, 255))
 
-    # 2. Center-Bottom Viral Boxed Captions (Guaranteed visible on every device)
     lines = textwrap.wrap(caption_text.upper(), width=15)
     if not lines:
         lines = ["ASLI HAQEEQAT!"]
@@ -410,7 +411,6 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
     box_y1 = 1360 - (total_text_h // 2)
     box_y2 = box_y1 + total_text_h + 44
 
-    # High-contrast dark backdrop pill behind captions
     draw.rounded_rectangle([55, box_y1, 1025, box_y2], radius=28, fill=(10, 12, 18, 230), outline=(255, 215, 0, 220), width=4)
 
     for i, line in enumerate(lines):
@@ -419,18 +419,15 @@ def create_burned_hud_overlay(caption_text, badge_text, scene_idx, total_scenes,
         tx = (1080 - tw) // 2
         ty = box_y1 + 20 + (i * line_height)
 
-        # Highlight color alternates between Part 1 (Yellow/White) and Part 2 (Neon Green/Yellow)
         if part_num == 1:
             fill_col = (255, 230, 0, 255) if i == 0 else (255, 255, 255, 255)
         else:
             fill_col = (0, 255, 150, 255) if i == 0 else (255, 230, 0, 255)
 
-        # Thick black shadow + bright foreground text
         for dx, dy in [(-4, -4), (4, -4), (-4, 4), (4, 4), (0, 5)]:
             draw.text((tx + dx, ty + dy), line, font=cap_font, fill=(0, 0, 0, 255))
         draw.text((tx, ty), line, font=cap_font, fill=fill_col)
 
-    # 3. Bottom Progress Bar
     progress_fraction = (scene_idx + (0.5 if part_num == 1 else 1.0)) / total_scenes
     prog_w = int(980 * progress_fraction)
     draw.rounded_rectangle([50, 1835, 1030, 1855], radius=10, fill=(255, 255, 255, 75))
@@ -533,7 +530,6 @@ def render_two_cut_scene(scene, idx, total_scenes, badge):
     q2 = scene["search_query_2"]
     v_q = scene.get("video_query", "")
 
-    # Only use stock video on specific action scenes where v_q is provided; otherwise use exact context photos!
     vid_file = fetch_contextual_stock_video(v_q, f"stock_vid_{idx}.mp4") if v_q else None
     if vid_file:
         media1, is_vid1 = vid_file, True
@@ -581,24 +577,90 @@ def build_full_video(script_data):
         for sf in scene_files:
             f.write(f"file '{sf}'\n")
 
-    final_output = "final_reel.mp4"
+    raw_output = "raw_reel.mp4"
     subprocess.run([
         "ffmpeg", "-y", "-f", "concat", "-safe", "0",
         "-i", "master_concat.txt",
         "-c:v", "libx264", "-preset", "fast", "-crf", "21",
         "-c:a", "aac", "-b:a", "192k",
-        final_output
+        raw_output
     ], check=True)
-    return final_output
 
-def send_to_telegram(video_path, script_data):
-    print("Uploading Pro-Edited Reel to Telegram...")
+    print("🎵 Mixing Cinematic Background Music...")
+    final_output = "final_reel.mp4"
+    bgm_url = "https://actions.google.com/sounds/v1/ambiences/cyberpunk_drone.ogg"
+    try:
+        bgm_resp = requests.get(bgm_url, headers=HEADERS, timeout=20)
+        if bgm_resp.status_code == 200:
+            with open("bgm.ogg", "wb") as f:
+                f.write(bgm_resp.content)
+            mix_cmd = [
+                "ffmpeg", "-y",
+                "-i", raw_output,
+                "-stream_loop", "-1", "-i", "bgm.ogg",
+                "-filter_complex", "[1:a]volume=0.09[bgm];[0:a][bgm]amix=inputs=2:duration=first:dropout_transition=2[a]",
+                "-map", "0:v", "-map", "[a]",
+                "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+                final_output
+            ]
+            subprocess.run(mix_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return final_output
+    except Exception as e:
+        print(f"BGM mixing skip: {e}")
+
+    return raw_output
+
+def upload_to_facebook(video_path, script_data):
+    """Automatically publishes the video to the Facebook Page with Title, Tagline, Description & Viral Tags."""
+    if not FB_ACCESS_TOKEN or not FB_PAGE_ID:
+        print("⚠️ Facebook credentials missing in environment variables.")
+        return False, "FB Secrets not linked in .yml file"
+
+    print(f"🚀 Uploading Video to Facebook Page ({FB_PAGE_ID})...")
+    url = f"https://graph-video.facebook.com/v20.0/{FB_PAGE_ID}/videos"
+
+    title = script_data.get("title", "Logic Aur Dhoka - Asli Physics!")
+    tagline = script_data.get("tagline", "Physics koi boring syllabus nahi, is dunya ka Source Code hai!")
+    description = script_data.get("description", "Rozana aisi real-world logic sikhne ke liye Logic Aur Dhoka ko follow karein!")
+    hashtags = script_data.get("hashtags", "#LogicAurDhoka #PhysicsLogic #DesiScam #ReelsPakistan")
+
+    full_post_description = (
+        f"{title}\n\n"
+        f"⚡ {tagline}\n\n"
+        f"📌 {description}\n\n"
+        f"👉 Follow @LogicAurDhoka for daily real-world physics & scam alerts!\n\n"
+        f"{hashtags}"
+    )
+
+    try:
+        with open(video_path, "rb") as vf:
+            payload = {
+                "access_token": FB_ACCESS_TOKEN,
+                "title": title,
+                "description": full_post_description
+            }
+            files = {"source": vf}
+            resp = requests.post(url, data=payload, files=files, timeout=180)
+            print("Facebook API Status:", resp.status_code, resp.text)
+            if resp.status_code == 200 and "id" in resp.json():
+                vid_id = resp.json()["id"]
+                return True, f"Published! (Video ID: {vid_id})"
+            return False, resp.text[:120]
+    except Exception as e:
+        print(f"Facebook Upload Error: {e}")
+        return False, str(e)[:120]
+
+def send_to_telegram(video_path, script_data, fb_ok, fb_msg):
+    print("Uploading Reel & Status Report to Telegram...")
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendVideo"
+    fb_status_line = f"✅ *Facebook Auto-Post:* {fb_msg}" if fb_ok else f"⚠️ *Facebook Auto-Post:* {fb_msg}"
+
     caption = (
         f"🔥 *{script_data.get('title')}*\n\n"
-        f"📲 *Facebook Reels Caption:*\n{script_data.get('title')}\n"
-        f"{script_data.get('hashtags', '#PhysicsLogic #ReelsPakistan')}\n\n"
-        f"✅ _Exact Scene Visuals | Boxed Pop Captions | Studio Urdu Voice_"
+        f"⚡ *Tagline:* {script_data.get('tagline')}\n\n"
+        f"📝 *Description:* {script_data.get('description')}\n\n"
+        f"🏷️ *Viral Tags:*\n{script_data.get('hashtags')}\n\n"
+        f"{fb_status_line}"
     )
     with open(video_path, "rb") as vf:
         resp = requests.post(
@@ -613,4 +675,5 @@ if __name__ == "__main__":
     data = generate_script_data()
     print("Video Title:", data.get("title"))
     final_vid = build_full_video(data)
-    send_to_telegram(final_vid, data)
+    fb_success, fb_info = upload_to_facebook(final_vid, data)
+    send_to_telegram(final_vid, data, fb_success, fb_info)
