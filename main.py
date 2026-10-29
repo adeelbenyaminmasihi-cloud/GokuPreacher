@@ -2,7 +2,8 @@ import os
 import re
 import json
 import math
-import time
+import wave
+import struct
 import random
 import asyncio
 import subprocess
@@ -38,7 +39,7 @@ FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 USED_MEDIA_URLS = set()
 
 # =====================================================================
-# INFINITE SEED MATRIX (COMBINATORIAL DOCUMENTARY ENGINE)
+# INFINITE SEED MATRIX (COMBINATORIAL 2-MINUTE DOCUMENTARY ENGINE)
 # =====================================================================
 SCIENCE_DOMAINS = [
     {
@@ -53,7 +54,7 @@ SCIENCE_DOMAINS = [
     },
     {
         "domain": "Fluid Dynamics & Aerodynamics",
-        "nasa_tie": "SpaceX Raptor Engine Nozzle & Supersonic Wind Tunnels",
+        "nasa_tie": "SpaceX Raptor Engine Nozzle & NASA Supersonic Wind Tunnels",
         "nasa_query": "supersonic wind tunnel rocket engine",
         "everyday_hook": "Bike Carburetor jet, Water Pump impellers aur Fuel Injectors ka dhoka",
         "scientist": "Daniel Bernoulli aur Claude-Louis Navier",
@@ -127,7 +128,7 @@ SCIENCE_DOMAINS = [
         "nasa_query": "astronaut spacewalk suit",
         "everyday_hook": "Tubular Battery acid gravity, Fast Charger heat damage aur Dry Battery scams",
         "scientist": "Alessandro Volta aur Walther Nernst",
-        "law": "Electrochemical Sulfation & Internal Resistance (I²R Loss)",
+        "law": "Electrochemical Sulfation & Internal Resistance (I2R Loss)",
         "pixabay_vid": "battery charging circuit",
         "giphy_query": "battery energy charge"
     },
@@ -143,7 +144,7 @@ SCIENCE_DOMAINS = [
     }
 ]
 
- ANGLES = [
+ANGLES = [
     "Mistri ka Jugaar vs NASA Engineering",
     "Har Mahine 20,000 Rupay ka Choona aur Asli Physics",
     "Desi Myth Exposed: Science Kya Kehti Hai?",
@@ -167,19 +168,17 @@ def save_used_topic(topic_id):
     used = load_used_topics()
     if topic_id not in used:
         used.append(topic_id)
-    # Keep last 500 topics in history
     used = used[-500:]
     with open(USED_TOPICS_FILE, "w", encoding="utf-8") as f:
         json.dump(used, f, indent=2, ensure_ascii=False)
 
 
 # =====================================================================
-# INFINITE 5-MINUTE DOCUMENTARY SCRIPT GENERATOR (GEMINI + PROCEDURAL)
+# INFINITE 2-MINUTE DOCUMENTARY SCRIPT GENERATOR (12 SCENES = ~120s)
 # =====================================================================
 def generate_infinite_documentary_script():
     used = load_used_topics()
 
-    # Build a unique combinatorial seed that hasn't been used
     candidates = []
     for dom in SCIENCE_DOMAINS:
         for ang in ANGLES:
@@ -188,37 +187,34 @@ def generate_infinite_documentary_script():
                 candidates.append((seed_id, dom, ang))
 
     if not candidates:
-        # Add timestamped variation if all base combinations were exhausted
         dom = random.choice(SCIENCE_DOMAINS)
         ang = random.choice(ANGLES)
-        seed_id = f"{dom['domain']} | {ang} | Vol-{len(used)+1}"
+        seed_id = f"{dom['domain']} | {ang} | Ep-{len(used)+1}"
     else:
         seed_id, dom, ang = random.choice(candidates)
 
     save_used_topic(seed_id)
-    print(f"🧠 Selected Unique Documentary Seed: {seed_id}")
+    print(f"🧠 Selected Unique 2-Minute Documentary Seed: {seed_id}")
 
-    # 1. Try Gemini API for a custom 28-scene (~5-minute) Documentary Script
     if GEMINI_API_KEY:
         try:
-            script = fetch_gemini_5min_script(dom, ang, used[-15:])
-            if script and len(script.get("scenes", [])) >= 24:
-                print(f"✨ Gemini Generated {len(script['scenes'])} Documentary Scenes Successfully!")
+            script = fetch_gemini_2min_script(dom, ang, used[-15:])
+            if script and len(script.get("scenes", [])) >= 10:
+                print(f"✨ Gemini Generated {len(script['scenes'])} Documentary Scenes (~2 Mins)!")
                 return script
         except Exception as e:
             print(f"⚠️ Gemini generation fallback triggered: {e}")
 
-    # 2. Deep Procedural 28-Scene Documentary Fallback (Never fails, dynamic combinations)
-    print("🎬 Building 28-Scene 5-Minute Documentary via Procedural Science Engine...")
-    return build_procedural_5min_documentary(dom, ang)
+    print("🎬 Building 12-Scene (2-Minute) Documentary via Procedural Science Engine...")
+    return build_procedural_2min_documentary(dom, ang)
 
 
-def fetch_gemini_5min_script(dom, ang, recent_topics):
+def fetch_gemini_2min_script(dom, ang, recent_topics):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
 
     prompt = f"""
 You are the chief documentary writer for 'Logic Aur Dhoka', a high-production Pakistani Urdu science & investigative documentary channel.
-Create a gripping, non-repetitive 5-MINUTE documentary script (exactly 28 scenes).
+Create a gripping, non-repetitive 2-MINUTE documentary script (exactly 12 scenes, ~10 seconds per scene = 120 seconds total).
 
 TOPIC DOMAIN: {dom['domain']}
 LOCAL EVERYDAY CONNECTION: {dom['everyday_hook']}
@@ -227,23 +223,22 @@ CORE SCIENTIFIC LAW & SCIENTIST: {dom['law']} by {dom['scientist']}
 DOCUMENTARY ANGLE: {ang}
 RECENTLY COVERED TOPICS TO AVOID REPEATING: {json.dumps(recent_topics)}
 
-REQUIREMENTS FOR 5-MINUTE LENGTH & QUALITY:
-1. Write exactly 28 scenes divided across 5 Documentary Acts:
-   - Scenes 1-4: ACT I - THE HOOK & STREET MYSTERY
-   - Scenes 5-10: ACT II - THE HISTORICAL EXPERIMENT & DISCOVERY
-   - Scenes 11-17: ACT III - THE HARD PHYSICS & NASA ENGINEERING
-   - Scenes 18-23: ACT IV - THE DESI SCAM / MECHANICAL DISASTER EXPOSED
-   - Scenes 24-28: ACT V - THE SCIENTIFIC SOLUTION & VERDICT
-2. Each scene's "tts_urdu" MUST be written in pure, natural Urdu script (نستعلیق/اردو) and MUST be 26 to 34 words long (approx 10-11 seconds of rich documentary narration per scene, totaling ~5 minutes across 28 scenes).
-3. Use an investigative, cinematic documentary tone (like National Geographic meets real-world street engineering). Never repeat sentences across scenes.
+REQUIREMENTS FOR 2-MINUTE LENGTH & QUALITY:
+1. Write exactly 12 scenes structured across 4 Documentary Acts:
+   - Scenes 1-2: ACT I - THE HOOK & STREET MYSTERY
+   - Scenes 3-5: ACT II - THE SCIENTIFIC DISCOVERY & PHYSICS LAW
+   - Scenes 6-8: ACT III - NASA SPACE ENGINEERING CONNECTION
+   - Scenes 9-12: ACT IV - THE DESI SCAM EXPOSED & SCIENTIFIC VERDICT
+2. Each scene's "tts_urdu" MUST be written in pure, natural Urdu script (اردو) and MUST be 24 to 30 words long (approx 10 seconds of rich documentary narration per scene, totaling ~2 minutes across 12 scenes).
+3. Use an investigative, cinematic documentary tone. Never repeat sentences across scenes.
 4. For each scene provide:
-   - "act": Short English act badge (e.g. "ACT I: STREET MYSTERY", "ACT III: NASA PHYSICS")
-   - "tts_urdu": 26-34 words of gripping Urdu narration.
+   - "act": Short English act badge (e.g. "ACT I: THE MYSTERY", "ACT III: NASA PHYSICS")
+   - "tts_urdu": 24-30 words of gripping Urdu narration.
    - "caption_part1": Punchy Roman-Urdu/English headline for first half (max 24 chars).
    - "caption_part2": Punchy Roman-Urdu/English headline for second half (max 24 chars).
-   - "media_source_pref": Choose "nasa", "pixabay", or "giphy" depending on what fits best visually.
-   - "search_query_1": 2-4 English keywords for visual cut 1 (photo/video).
-   - "search_query_2": 2-4 English keywords for visual cut 2 (photo/GIF).
+   - "media_source_pref": Choose "nasa", "pixabay", or "giphy".
+   - "search_query_1": 2-4 English keywords for visual cut 1.
+   - "search_query_2": 2-4 English keywords for visual cut 2.
    - "video_query": 1-3 English keywords for stock video or NASA video.
    - "sfx_type": Choose one of ["boom", "whoosh", "riser", "pulse"].
 
@@ -254,7 +249,7 @@ Return ONLY valid JSON matching this structure:
   "description": "[3-sentence summary explaining the physics law, NASA connection, and local scam]",
   "hashtags": "#LogicAurDhoka #UrduDocumentary #PhysicsLogic #NASAScience #PakistaniReels #ScienceFacts",
   "category_badge": "[SHORT CAPS BADGE]",
-  "scenes": [ ... 28 scene objects ... ]
+  "scenes": [ ... 12 scene objects ... ]
 }}
 """
 
@@ -266,22 +261,20 @@ Return ONLY valid JSON matching this structure:
         }
     }
 
-    resp = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=90)
+    resp = requests.post(url, headers={"Content-Type": "application/json"}, json=payload, timeout=75)
     if resp.status_code != 200:
-        # Fallback to gemini-1.5-flash if 2.5 endpoint isn't enabled on key
         url_fallback = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-        resp = requests.post(url_fallback, headers={"Content-Type": "application/json"}, json=payload, timeout=90)
+        resp = requests.post(url_fallback, headers={"Content-Type": "application/json"}, json=payload, timeout=75)
 
     if resp.status_code == 200:
         raw_text = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
         raw_text = re.sub(r"^```json\s*|\s*```$", "", raw_text.strip())
-        data = json.loads(raw_text)
-        return data
+        return json.loads(raw_text)
     raise RuntimeError(f"Gemini API HTTP {resp.status_code}: {resp.text[:160]}")
 
 
-def build_procedural_5min_documentary(dom, ang):
-    """28-Scene (~5 Minute) Deep Documentary Fallback if Gemini API key is absent or rate-limited."""
+def build_procedural_2min_documentary(dom, ang):
+    """12-Scene (~2 Minute / 120s) Documentary Engine."""
     d_name = dom["domain"]
     nasa_tie = dom["nasa_tie"]
     nasa_q = dom["nasa_query"]
@@ -292,10 +285,10 @@ def build_procedural_5min_documentary(dom, ang):
     g_q = dom["giphy_query"]
 
     scenes = [
-        # ACT I: THE HOOK & MYSTERY (Scenes 1-4)
+        # ACT I: THE HOOK & MYSTERY (Scenes 1-2)
         {
             "act": "ACT I: THE MYSTERY",
-            "tts_urdu": f"کیا آپ نے کبھی غور کیا ہے کہ ہر چند مہینے بعد آپ کے گھر کی مشینیں، گاڑی کا انجن یا بجلی کا بل اچانک آپ کی جیب پر ہزاروں روپے کا بم کیوں گراتا ہے؟",
+            "tts_urdu": "کیا آپ نے کبھی سوچا ہے کہ ہر چند مہینے بعد آپ کے گھر کی مشینیں، گاڑی کا انجن یا بجلی کا بل اچانک آپ کی جیب سے ہزاروں روپے کیسے نکال لیتا ہے؟",
             "caption_part1": "HAR CHAND MAHINE BAAD",
             "caption_part2": "HAZAROON KA NAYA KHARCHA?",
             "media_source_pref": "pixabay",
@@ -306,7 +299,7 @@ def build_procedural_5min_documentary(dom, ang):
         },
         {
             "act": "ACT I: THE MYSTERY",
-            "tts_urdu": f"مارکیٹ میں بیٹھا کاریگر اسے آپ کی قسمت یا موسم کا قصور بتاتا ہے، مگر اصل حقیقت یہ ہے کہ وہاں فزکس کے ایک اٹل قانون کا خاموشی سے قتل ہو رہا ہوتا ہے!",
+            "tts_urdu": "مارکیٹ میں بیٹھا کاریگر اسے آپ کی قسمت کا قصور بتاتا ہے، مگر اصل حقیقت یہ ہے کہ وہاں دیسی جگاڑ کے نام پر فزکس کے قانون کا قتل ہو رہا ہوتا ہے!",
             "caption_part1": "QISMAT KA QASOOR NAHI",
             "caption_part2": "PHYSICS KA QATAL HAI!",
             "media_source_pref": "giphy",
@@ -315,302 +308,125 @@ def build_procedural_5min_documentary(dom, ang):
             "video_query": "mechanic repair",
             "sfx_type": "whoosh"
         },
+        # ACT II: SCIENTIFIC DISCOVERY & LAW (Scenes 3-5)
         {
-            "act": "ACT I: THE MYSTERY",
-            "tts_urdu": f"آج کی اس خصوصی ڈاکیومنٹری میں ہم سڑک کنارے ہونے والے دیسی جگاڑ سے لے کر ناسا کے خلائی مشنز تک اس سائنسی راز کا پوسٹ مارٹم کرنے جا رہے ہیں۔",
-            "caption_part1": "DESI JUGAAR SE LE KAR",
-            "caption_part2": "NASA SPACE MISSION TAK!",
-            "media_source_pref": "nasa",
-            "search_query_1": nasa_q,
-            "search_query_2": "spacecraft launch pad",
-            "video_query": nasa_q,
-            "sfx_type": "riser"
-        },
-        {
-            "act": "ACT I: THE MYSTERY",
-            "tts_urdu": f"کیونکہ جو اصول خلا میں اربوں ڈالر کے راکٹ کو تباہ ہونے سے بچاتا ہے، وہی اصول آپ کی روزمرہ زندگی میں آپ کے لاکھوں روپے بھی بچا سکتا ہے، بس اگلے چند منٹ غور سے سنیے۔",
-            "caption_part1": "ARBON DOLLAR KA RAAZ",
-            "caption_part2": "AAPKI JEB BACHAYEGA!",
-            "media_source_pref": "nasa",
-            "search_query_1": "earth from space",
-            "search_query_2": "industrial machine gears",
-            "video_query": "earth orbit",
-            "sfx_type": "pulse"
-        },
-        # ACT II: HISTORICAL ORIGIN (Scenes 5-10)
-        {
-            "act": "ACT II: HISTORY OF SCIENCE",
-            "tts_urdu": f"اس کہانی کی شروعات آج سے کئی دہائیاں پہلے یورپ کی ایک سائنسی لیبارٹری میں ہوئی، جہاں عظیم سائنسدان توانائی، دباؤ اور حرارت کے چھپے ہوئے راز تلاش کر رہے تھے۔",
-            "caption_part1": "EUROPE KI LABORATORY",
-            "caption_part2": "AUR SCIENCE KI KHOJ!",
+            "act": "ACT II: SCIENCE HISTORY",
+            "tts_urdu": "اس سائنسی راز کی شروعات یورپ کی قدیم لیبارٹریز میں ہوئی، جہاں عظیم سائنسدانوں نے رات دن کے تجربات سے توانائی، دباؤ اور حرارت کے قدرتی قوانین دریافت کیے۔",
+            "caption_part1": "SCIENCE KI LABORATORY",
+            "caption_part2": "AUR TAREEKHI KHOJ!",
             "media_source_pref": "pixabay",
             "search_query_1": "vintage science laboratory",
-            "search_query_2": "old physics book manuscript",
+            "search_query_2": "engineering blueprint",
             "video_query": "science laboratory",
-            "sfx_type": "boom"
-        },
-        {
-            "act": "ACT II: HISTORY OF SCIENCE",
-            "tts_urdu": f"اس دور میں جب دنیا بھاپ کے انجن اور ابتدائی مشینیں بنا رہی تھی، تو نوے فیصد توانائی رگڑ، حرارت اور غلط ڈیزائن کی وجہ سے ہوا میں ضائع ہو جاتی تھی۔",
-            "caption_part1": "90% ENERGY ZAYA",
-            "caption_part2": "SHURUATI MACHINES KA HAAL!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "steam train locomotive",
-            "search_query_2": "coal fire furnace",
-            "video_query": "steam engine",
-            "sfx_type": "whoosh"
-        },
-        {
-            "act": "ACT II: HISTORY OF SCIENCE",
-            "tts_urdu": f"تب تاریخ کے مشہور سائنسدانوں نے رات دن کے تجربات کے بعد یہ ثابت کیا کہ کائنات کی کوئی بھی مشین آپ کی مرضی سے نہیں بلکہ ریاضی کے قوانین سے چلتی ہے۔",
-            "caption_part1": "KAINAT KI HAR MACHINE",
-            "caption_part2": "MATHS KE QANOON PAR HAI!",
-            "media_source_pref": "giphy",
-            "search_query_1": g_q,
-            "search_query_2": "mathematics geometry",
-            "video_query": "mathematics",
-            "sfx_type": "pulse"
-        },
-        {
-            "act": "ACT II: HISTORY OF SCIENCE",
-            "tts_urdu": f"انہی تجربات کے نتیجے میں فزکس کا وہ سنہری اصول سامنے آیا جسے آج دنیا بھر کے انجینئرز اور سائنسدان اپنے ہر ڈیزائن کی بنیاد مانتے ہیں۔",
-            "caption_part1": law[:22].upper(),
-            "caption_part2": "ENGINEERING KI BUNYAD!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "engineering blueprint",
-            "search_query_2": "precision metal calipers",
-            "video_query": "engineering",
             "sfx_type": "riser"
         },
         {
-            "act": "ACT II: HISTORY OF SCIENCE",
-            "tts_urdu": f"اس قانون نے واضح کر دیا کہ جب کسی سسٹم میں توانائی، دباؤ یا بہاؤ کا قدرتی توازن بگاڑا جائے، تو وہ توانائی غائب نہیں ہوتی بلکہ اندرونی تباہی کا روپ دھار لیتی ہے۔",
+            "act": "ACT II: SCIENCE HISTORY",
+            "tts_urdu": "ان تجربات نے ثابت کیا کہ دنیا کی کوئی بھی مشین انسان کی مرضی سے نہیں چلتی، بلکہ جب تک اس میں توانائی اور دباؤ کا ریاضیاتی توازن رہے تبھی وہ محفوظ رہتی ہے۔",
+            "caption_part1": law[:22].upper(),
+            "caption_part2": "ENGINEERING KI BUNYAD!",
+            "media_source_pref": "giphy",
+            "search_query_1": g_q,
+            "search_query_2": "precision metal gears",
+            "video_query": "engineering",
+            "sfx_type": "pulse"
+        },
+        {
+            "act": "ACT II: SCIENCE HISTORY",
+            "tts_urdu": "فزکس کے اس اصول کے مطابق جب کسی انجن یا سرکٹ کا قدرتی توازن بگاڑا جائے، تو بچنے والی توانائی غائب نہیں ہوتی بلکہ اندرونی رگڑ اور تباہی بن جاتی ہے۔",
             "caption_part1": "ENERGY GAYAB NAHI HOTI",
             "caption_part2": "ANDAR TABAHI MACHATI HAI!",
-            "media_source_pref": "giphy",
-            "search_query_1": "fire explosion slow motion",
+            "media_source_pref": "pixabay",
+            "search_query_1": "fire sparks metal",
             "search_query_2": "pressure gauge danger",
             "video_query": "fire sparks",
             "sfx_type": "boom"
         },
+        # ACT III: NASA SPACE ENGINEERING (Scenes 6-8)
         {
-            "act": "ACT II: HISTORY OF SCIENCE",
-            "tts_urdu": f"یہی وجہ ہے کہ جب فیکٹری میں کوئی انجن، کمپریسر یا الیکٹرانک سرکٹ ڈیزائن کیا جاتا ہے تو اس کے ایک ایک ملی میٹر کا حساب سیکنڈ کےہزارویں حصے تک رکھا جاتا ہے۔",
-            "caption_part1": "1 MILLIMETER KA HISAAB",
-            "caption_part2": "FACTORY PRECISION DESIGN!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "robotic factory assembly",
-            "search_query_2": "microchip circuit board",
-            "video_query": "factory robot",
-            "sfx_type": "whoosh"
-        },
-        # ACT III: HARD PHYSICS & NASA ENGINEERING (Scenes 11-17)
-        {
-            "act": "ACT III: NASA ENGINEERING",
-            "tts_urdu": f"اب ذرا تصور کریں کہ یہی سائنسی چیلنج جب زمین سے چار سو کلومیٹر اوپر خلا کی بے رحم ویکیوم میں ناسا کے انجینئرز کے سامنے آتا ہے تو وہاں کیا ہوتا ہے؟",
-            "caption_part1": "400 KM UPAR KHALA MEIN",
-            "caption_part2": "NASA KA SABSE BARA TEST!",
+            "act": "ACT III: NASA PHYSICS",
+            "tts_urdu": "اب ذرا دیکھیے کہ زمین سے سینکڑوں کلومیٹر اوپر خلا کی بے رحم ویکیوم میں ناسا کے انجینئرز اسی سائنسی قانون کو استعمال کر کے اربوں ڈالر کے مشن کیسے بچاتے ہیں!",
+            "caption_part1": "KHALA MEIN NASA MISSION",
+            "caption_part2": "PURE PHYSICS PROTECTION!",
             "media_source_pref": "nasa",
             "search_query_1": nasa_q,
-            "search_query_2": "astronaut floating space",
+            "search_query_2": "astronaut spacewalk",
             "video_query": nasa_q,
             "sfx_type": "riser"
         },
         {
-            "act": "ACT III: NASA ENGINEERING",
-            "tts_urdu": f"خلا میں جہاں ایک طرف سورج کی تپش سینکڑوں ڈگری تک پہنچ جاتی ہے اور سائے میں منفی درجہ حرارت ہر دھات کو شیشے کی طرح توڑ سکتا ہے، وہاں غلطی کی گنجائش صفر ہوتی ہے۔",
-            "caption_part1": "EXTREME HEAT AUR COLD",
+            "act": "ACT III: NASA PHYSICS",
+            "tts_urdu": "جب راکٹ کے انجن سے تین ہزار ڈگری کی آگ نکلتی ہے یا سیٹلائٹ خلا میں گھومتا ہے، تو وہاں دباؤ اور حرارت کے صرف ایک فیصد فرق سے پورا مشن تباہ ہو سکتا ہے۔",
+            "caption_part1": "3,000 DEGREE KI AAG",
             "caption_part2": "GALTI KI GUNJAISH ZERO!",
             "media_source_pref": "nasa",
-            "search_query_1": "sun solar flare nasa",
-            "search_query_2": "satellite thermal blanket",
-            "video_query": "solar flare",
-            "sfx_type": "boom"
-        },
-        {
-            "act": "ACT III: NASA ENGINEERING",
-            "tts_urdu": f"ناسا کے مشنز میں تھرمو ڈائنامکس، فلوئڈ ڈائنامکس اور الیکٹرو میگنیٹزم کے اسی اصول کو استعمال کر کے راکٹ کے انجن اور سیٹلائٹ کے کولنگ سسٹم کو محفوظ رکھا جاتا ہے۔",
-            "caption_part1": "ROCKET ENGINE COOLING",
-            "caption_part2": "PURE PHYSICS PROTECTION!",
-            "media_source_pref": "nasa",
             "search_query_1": "rocket engine test fire",
-            "search_query_2": nasa_q,
-            "video_query": "rocket engine test",
-            "sfx_type": "pulse"
-        },
-        {
-            "act": "ACT III: NASA ENGINEERING",
-            "tts_urdu": f"مثال کے طور پر راکٹ کے نوزل سے جب تین ہزار ڈگری سینٹی گریڈ کی آگ نکلتی ہے، تو اس کے گرد خاص دباؤ اور بہاؤ کا توازن ہی دھات کو پگھلنے سے بچاتا ہے۔",
-            "caption_part1": "3,000 DEGREE KI AAG",
-            "caption_part2": "AUR FLUID FLOW BALANCE!",
-            "media_source_pref": "nasa",
-            "search_query_1": "rocket launch flame",
-            "search_query_2": "jet turbine blades",
-            "video_query": "rocket launch",
-            "sfx_type": "whoosh"
-        },
-        {
-            "act": "ACT III: NASA ENGINEERING",
-            "tts_urdu": f"اگر وہاں دباؤ، وولٹیج یا حرارت کے تناسب میں صرف دو فیصد کا بھی فرق آ جائے، تو اربوں ڈالر کا خلائی مشن چند سیکنڈ کے اندر راکھ کے ڈھیر میں بدل سکتا ہے۔",
-            "caption_part1": "SIRF 2% KA FARQ =",
-            "caption_part2": "POORA MISSION TABAH!",
-            "media_source_pref": "giphy",
-            "search_query_1": g_q,
             "search_query_2": "mission control nasa",
-            "video_query": "mission control",
+            "video_query": "rocket launch",
             "sfx_type": "boom"
         },
         {
-            "act": "ACT III: NASA ENGINEERING",
-            "tts_urdu": f"ناسا کے سینسرز ہر لمحے رگڑ، دباؤ اور مالیکیولز کی رفتار کو ناپتے ہیں تاکہ سسٹم ہمیشہ اپنی آئیڈیل ایفیشنسی یعنی بہترین کارکردگی کی لکیر پر چلتا رہے۔",
-            "caption_part1": "HAR SECOND SENSOR CHECK",
-            "caption_part2": "100% IDEAL EFFICIENCY!",
-            "media_source_pref": "nasa",
-            "search_query_1": "spacecraft cockpit display",
-            "search_query_2": "telemetry data screen",
-            "video_query": "space station",
-            "sfx_type": "pulse"
-        },
-        {
-            "act": "ACT III: NASA ENGINEERING",
-            "tts_urdu": f"اب سب سے حیرت انگیز بات سنیے! جو فزکس ناسا کے راکٹ اور سیٹلائٹ میں کام کرتی ہے، بالکل وہی فزکس آپ کی گاڑی، بائیک، اے سی اور سولر سسٹم کے اندر بھی کام کر رہی ہے!",
+            "act": "ACT III: NASA PHYSICS",
+            "tts_urdu": "سب سے حیرت انگیز حقیقت یہ ہے کہ جو فزکس ناسا کے راکٹ اور خلائی اسٹیشن کو بچاتی ہے، بالکل وہی فزکس آپ کی گاڑی، اے سی اور سولر سسٹم کے اندر بھی کام کرتی ہے!",
             "caption_part1": "NASA WALI SAME PHYSICS",
             "caption_part2": "AAPKE GHAR KI MACHINE MEIN!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "car engine closeup",
-            "search_query_2": "solar panels roof",
+            "media_source_pref": "nasa",
+            "search_query_1": "international space station",
+            "search_query_2": "car engine closeup",
             "video_query": p_vid,
-            "sfx_type": "riser"
+            "sfx_type": "pulse"
         },
-        # ACT IV: THE DESI SCAM & MECHANICAL DISASTER (Scenes 18-23)
+        # ACT IV: DESI SCAM EXPOSED & VERDICT (Scenes 9-12)
         {
-            "act": "ACT IV: STREET REALITY",
-            "tts_urdu": f"مگر المیہ تب شروع ہوتا ہے جب ہم اتنی باریک انجینئرنگ سے بنی ہوئی مشین کو لے کر کسی ایسے کاریگر کے پاس جاتے ہیں جو سائنس کو نہیں بلکہ جگاڑ کو مانتا ہے۔",
-            "caption_part1": "BAREEK ENGINEERING VS",
-            "caption_part2": "DESI USTAAD KA JUGAAR!",
+            "act": "ACT IV: SCAM EXPOSED",
+            "tts_urdu": "مگر المیہ تب ہوتا ہے جب ہم کمپنی کی اس باریک انجینئرنگ کو کسی ایسے کاریگر کے حوالے کرتے ہیں جو بغیر کسی سائنسی میٹر کے پیچ کس گھما کر سستا جگاڑ لگاتا ہے۔",
+            "caption_part1": "BINA METER KE JUGAAR",
+            "caption_part2": "AUR PHYSICS BALANCE KHATAM!",
             "media_source_pref": "pixabay",
             "search_query_1": "local mechanic wrench",
-            "search_query_2": "dirty engine oil",
+            "search_query_2": "electrical wires sparks",
             "video_query": "mechanic",
-            "sfx_type": "boom"
-        },
-        {
-            "act": "ACT IV: STREET REALITY",
-            "tts_urdu": f"وہ استاد بڑے اعتماد سے پیچ کس یا پلاس اٹھاتا ہے اور کہتا ہے کہ بھائی جان کمپنی والوں کو کچھ پتا نہیں، میں ایسی سیٹنگ کروں گا کہ خرچہ آدھا رہ جائے گا!",
-            "caption_part1": "'COMPANY KO KUCH PATA NAHI'",
-            "caption_part2": "USTAAD KA JHOOTA DAWA!",
-            "media_source_pref": "giphy",
-            "search_query_1": "screwdriver repair",
-            "search_query_2": "Broken gears machine",
-            "video_query": "tools repair",
             "sfx_type": "whoosh"
         },
         {
-            "act": "ACT IV: STREET REALITY",
-            "tts_urdu": f"جب وہ بغیر کسی سائنسی میٹر کے والو دباتا ہے، غلط گریڈ کا آئل ڈالتا ہے یا سرکٹ کو بائی پاس کرتا ہے، تو فزکس کا توازن اسی لمحے ٹوٹ جاتا ہے۔",
-            "caption_part1": "BINA METER KE BYPASS",
-            "caption_part2": "PHYSICS BALANCE KHATAM!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "electrical wires sparks",
-            "search_query_2": "overheating car radiator",
-            "video_query": "sparks",
-            "sfx_type": "pulse"
-        },
-        {
-            "act": "ACT IV: STREET REALITY",
-            "tts_urdu": f"شروع کے دس پندرہ دن آپ کو لگتا ہے کہ شاید جگاڑ کامیاب ہو گیا ہے، لیکن مشین کے اندر غیر معمولی حرارت، دباؤ اور رگڑ خاموشی سے دھات کو کھا رہی ہوتی ہے۔",
-            "caption_part1": "15 DIN BAAD ANDAR HI ANDAR",
-            "caption_part2": "HEAT AUR FRICTION KA HAMLA!",
+            "act": "ACT IV: SCAM EXPOSED",
+            "tts_urdu": "شروع کے چند ہفتے تو سب ٹھیک لگتا ہے، لیکن اندر ہی اندر غیر معمولی حرارت، زنگ اور رگڑ قیمتی پرزوں کو گلا کر پچاس ہزار کا نیا خرچہ کھڑا کر دیتی ہے!",
+            "caption_part1": "500 BACHANE KE CHAKKAR MEIN",
+            "caption_part2": "50,000 KA SEEDHA NUQSAN!",
             "media_source_pref": "giphy",
-            "search_query_1": "thermal camera heat",
-            "search_query_2": "rusty damaged piston",
-            "video_query": "fire heat",
-            "sfx_type": "riser"
-        },
-        {
-            "act": "ACT IV: STREET REALITY",
-            "tts_urdu": f"تھرمو ڈائنامکس اور انرجی کنزرویشن کے مطابق جو توانائی صحیح کام میں استعمال ہونی تھی، وہ اب وائبریشن، زنگ اور اوور ہیٹنگ بن کر قیمتی پرزوں کو گلا دیتی ہے۔",
-            "caption_part1": "OVERHEATING AUR ZANG:",
-            "caption_part2": "QEEMTI PURZAY GALTAY HAIN!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "burnt electronic board",
-            "search_query_2": "smoke coming from hood",
+            "search_query_1": "overheating car radiator",
+            "search_query_2": "empty wallet money",
             "video_query": "smoke engine",
             "sfx_type": "boom"
         },
         {
-            "act": "ACT IV: STREET REALITY",
-            "tts_urdu": f"اور پھر نتیجہ وہی نکلتا ہے! پانچ سو یا ہزار روپے بچانے کے چکر میں پورا کمپریسر، ہیڈ گیسکٹ یا انورٹر بیٹھ جاتا ہے اور پچاس ہزار کا نیا بل آپ کے ہاتھ میں آتا ہے۔",
-            "caption_part1": "500 BACHANE KE CHAKKAR MEIN",
-            "caption_part2": "50,000 KA SEEDHA NUQSAN!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "empty wallet money",
-            "search_query_2": "stressed man holding head",
-            "video_query": "money cash",
-            "sfx_type": "whoosh"
-        },
-        # ACT V: THE SCIENTIFIC SOLUTION & VERDICT (Scenes 24-28)
-        {
-            "act": "ACT V: THE SOLUTION",
-            "tts_urdu": f"تو اس لوٹ مار اور نقصان سے بچنے کا اصل سائنسی طریقہ کیا ہے؟ سب سے پہلا اصول یہ ہے کہ کبھی بھی فیکٹری کے بنائے ہوئے انجینئرنگ سٹینڈرڈ سے چھیڑ چھاڑ نہ ہونے دیں۔",
+            "act": "ACT IV: THE VERDICT",
+            "tts_urdu": "اس نقصان سے بچنے کا واحد سائنسی حل یہ ہے کہ کبھی فیکٹری کے سٹینڈرڈ، کولنٹ، آئل گریڈ یا سرکٹ کو بائی پاس نہ کروائیں اور ہر کام میٹر کی ریڈنگ سے پرکھیں۔",
             "caption_part1": "ASLI SCIENTIFIC SOLUTION:",
             "caption_part2": "FACTORY STANDARD NA CHHEREIN!",
             "media_source_pref": "pixabay",
-            "search_query_1": "car manual book",
-            "search_query_2": "digital multimeter gauge",
-            "video_query": "technology",
-            "sfx_type": "riser"
-        },
-        {
-            "act": "ACT V: THE SOLUTION",
-            "tts_urdu": f"ہمیشہ صحیح گریڈ کا کولنٹ، کمپنی کا تجویز کردہ آئل سٹینڈرڈ، ٹائر پریشر گیج اور سولر پینلز کی بروقت صفائی کو اپنی عادت بنائیں کیونکہ یہی فزکس کی ڈیمانڈ ہے۔",
-            "caption_part1": "SAHI GRADE AUR METER TEST",
-            "caption_part2": "MACHINE KI LAMBI ZINDAGI!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "tire pressure gauge",
+            "search_query_1": "digital multimeter gauge",
             "search_query_2": "clean solar panels",
-            "video_query": "solar energy",
+            "video_query": "technology",
             "sfx_type": "pulse"
         },
         {
-            "act": "ACT V: THE SOLUTION",
-            "tts_urdu": f"جب کوئی کاریگر آپ کو بغیر دلیل کے کوئی شارٹ کٹ بتائے، تو اس سے پوچھیں کہ بھائی اس کے پیچھے کون سی سائنس ہے؟ یقین کریں آدھے دھوکے اسی سوال سے ختم ہو جائیں گے۔",
-            "caption_part1": "SHORTCUT PAR SAWAL POOCHEIN:",
-            "caption_part2": "ISKE PEECHE LOGIC KYA HAI?",
-            "media_source_pref": "giphy",
-            "search_query_1": "thinking brain network",
-            "search_query_2": "magnifying glass inspection",
-            "video_query": "brain",
-            "sfx_type": "whoosh"
-        },
-        {
-            "act": "ACT V: THE SOLUTION",
-            "tts_urdu": f"یاد رکھیں، ناسا کے خلائی جہاز سے لے کر آپ کے گھر کے پنکھے تک، فزکس کسی کی سفارش نہیں مانتی۔ جو اس کے قوانین کی عزت کرتا ہے، اس کا پیسہ اور وقت دونوں محفوظ رہتے ہیں۔",
-            "caption_part1": "PHYSICS SIFARISH NAHI MANTI",
-            "caption_part2": "QAWAANEEN KI IZZAT KAREIN!",
-            "media_source_pref": "nasa",
-            "search_query_1": nasa_q,
-            "search_query_2": "galaxy stars universe",
-            "video_query": "space galaxy",
-            "sfx_type": "boom"
-        },
-        {
-            "act": "ACT V: THE SOLUTION",
-            "tts_urdu": f"فزکس رٹے لگانے والا بورنگ مضمون نہیں بلکہ اس کائنات کا سورس کوڈ ہے! ایسی مزید معلوماتی ڈاکیومنٹریز کے لیے لاجک اور دھوکہ پیج کو ابھی فالو کریں اور ویڈیو شیئر کریں!",
+            "act": "ACT IV: THE VERDICT",
+            "tts_urdu": "یاد رکھیں، فزکس کوئی بورنگ مضمون نہیں بلکہ اس کائنات کا سورس کوڈ ہے! ایسی مزید معلوماتی ڈاکیومنٹریز کے لیے لاجک اور دھوکہ پیج کو ابھی فالو اور شیئر کریں!",
             "caption_part1": "LOGIC AUR DHOKA DOCUMENTARY",
             "caption_part2": "ABHI FOLLOW AUR SHARE KAREIN!",
-            "media_source_pref": "pixabay",
-            "search_query_1": "smartphone social media",
-            "search_query_2": "futuristic technology hud",
-            "video_query": "technology",
+            "media_source_pref": "nasa",
+            "search_query_1": "galaxy stars universe",
+            "search_query_2": "smartphone social media",
+            "video_query": "space galaxy",
             "sfx_type": "riser"
         }
     ]
 
     return {
-        "title": f"🧠 {d_name}: {ang} | 5-Min Documentary",
+        "title": f"🧠 {d_name}: {ang} | 2-Min Documentary",
         "tagline": f"{hook} — NASA Engineering aur {law} ki roshni mein asli haqeeqat! 🚀🔬",
-        "description": f"Is 5-minute documentary mein samjhein ke {sci} ka {law} kaise {nasa_tie} se le kar aapke ghar ki machines ({hook}) tak kaam karta hai.",
+        "description": f"Is 2-minute documentary mein samjhein ke {sci} ka {law} kaise {nasa_tie} se le kar aapke ghar ki machines ({hook}) tak kaam karta hai.",
         "hashtags": "#LogicAurDhoka #UrduDocumentary #PhysicsLogic #NASAScience #EngineeringFacts #DesiScamExposed #ScienceUrdu #ViralReels",
         "category_badge": d_name.split("&")[0].strip().upper()[:22],
         "scenes": scenes
@@ -621,7 +437,7 @@ def build_procedural_5min_documentary(dom, ang):
 # MULTI-SOURCE MEDIA FETCHERS (NASA API + GIPHY API + PIXABAY + BING)
 # =====================================================================
 def fetch_nasa_media(query, filename, prefer_video=True):
-    """Fetches royalty-free HD Space/Engineering Videos or Photos from https://images-api.nasa.gov (No API Key required)."""
+    """Fetches royalty-free HD Space/Engineering Videos or Photos from https://images-api.nasa.gov."""
     if not query:
         return None, False
 
@@ -642,7 +458,6 @@ def fetch_nasa_media(query, filename, prefer_video=True):
                 nasa_id = data_list[0].get("nasa_id", "")
                 href = item.get("href", "")
 
-                # 1. Try Video Asset if prefer_video
                 if prefer_video and m_type == "video" and href:
                     try:
                         asset_r = requests.get(href, headers=HEADERS, timeout=15)
@@ -658,8 +473,8 @@ def fetch_nasa_media(query, filename, prefer_video=True):
                                 if vid_url not in USED_MEDIA_URLS:
                                     USED_MEDIA_URLS.add(vid_url)
                                     vid_url_clean = vid_url.replace(" ", "%20")
-                                    vr = requests.get(vid_url_clean, headers=HEADERS, timeout=35)
-                                    if vr.status_code == 200 and len(vr.content) > 60000:
+                                    vr = requests.get(vid_url_clean, headers=HEADERS, timeout=30)
+                                    if vr.status_code == 200 and len(vr.content) > 50000:
                                         vid_out = filename if filename.endswith(".mp4") else f"{filename}.mp4"
                                         with open(vid_out, "wb") as f:
                                             f.write(vr.content)
@@ -668,14 +483,13 @@ def fetch_nasa_media(query, filename, prefer_video=True):
                     except Exception:
                         pass
 
-                # 2. Try High-Res Image from links
                 links = item.get("links", [])
                 for lnk in links:
                     if lnk.get("render") == "image":
                         img_url = lnk.get("href", "")
                         if img_url and img_url not in USED_MEDIA_URLS:
                             USED_MEDIA_URLS.add(img_url)
-                            ir = requests.get(img_url.replace(" ", "%20"), headers=HEADERS, timeout=18)
+                            ir = requests.get(img_url.replace(" ", "%20"), headers=HEADERS, timeout=15)
                             if ir.status_code == 200 and len(ir.content) > 15000:
                                 img_out = filename if filename.endswith(".jpg") else f"{filename}.jpg"
                                 with open(img_out, "wb") as f:
@@ -711,7 +525,7 @@ def fetch_giphy_mp4(query, filename):
                 if mp4_url and mp4_url not in USED_MEDIA_URLS:
                     USED_MEDIA_URLS.add(mp4_url)
                     vr = requests.get(mp4_url, headers=HEADERS, timeout=25)
-                    if vr.status_code == 200 and len(vr.content) > 25000:
+                    if vr.status_code == 200 and len(vr.content) > 20000:
                         with open(filename, "wb") as f:
                             f.write(vr.content)
                         print(f"  [⚡ GIPHY MP4] Downloaded dynamic loop for '{query}'")
@@ -726,19 +540,16 @@ def fetch_contextual_stock_video(query, filename, pref="pixabay"):
     if not query:
         return None
 
-    # Route 1: NASA Preference
     if pref == "nasa" or any(k in query.lower() for k in ["nasa", "rocket", "space", "satellite", "orbit", "solar flare", "mars", "astronaut"]):
         nasa_file, is_vid = fetch_nasa_media(query, filename, prefer_video=True)
         if nasa_file and is_vid:
             return nasa_file
 
-    # Route 2: GIPHY Preference
     if pref == "giphy" and GIPHY_API_KEY:
         g_file = fetch_giphy_mp4(query, filename)
         if g_file:
             return g_file
 
-    # Route 3: Official Pixabay Video API
     if PIXABAY_API_KEY:
         try:
             encoded = urllib.parse.quote(query.strip())
@@ -765,13 +576,11 @@ def fetch_contextual_stock_video(query, filename, pref="pixabay"):
         except Exception as e:
             print(f"  [!] Pixabay video skip ({query}): {e}")
 
-    # Route 4: GIPHY Fallback if Pixabay had no video match
     if GIPHY_API_KEY:
         g_file = fetch_giphy_mp4(query, filename)
         if g_file:
             return g_file
 
-    # Route 5: Mixkit Fallback
     slug = urllib.parse.quote(query.lower().strip().split()[0])
     search_url = f"https://mixkit.co/free-stock-video/{slug}/"
     try:
@@ -795,13 +604,11 @@ def fetch_contextual_stock_video(query, filename, pref="pixabay"):
 
 def fetch_exact_scene_photo(query, filename, pref="pixabay"):
     """Fetches HD Photos from NASA, Pixabay, or Bing HD."""
-    # 1. Check NASA Images if space/science query
     if pref == "nasa" or any(k in query.lower() for k in ["nasa", "space", "rocket", "satellite", "planet", "astronaut", "galaxy", "telescope", "mars"]):
         nasa_img, is_vid = fetch_nasa_media(query, filename, prefer_video=False)
         if nasa_img and not is_vid:
             return nasa_img
 
-    # 2. Official Pixabay Image API
     if PIXABAY_API_KEY:
         try:
             encoded = urllib.parse.quote(query.strip())
@@ -824,14 +631,12 @@ def fetch_exact_scene_photo(query, filename, pref="pixabay"):
         except Exception as e:
             print(f"  [!] Pixabay photo skip ({query}): {e}")
 
-    # 3. NASA Image Fallback for general science/engineering queries
     nasa_img, is_vid = fetch_nasa_media(query, filename, prefer_video=False)
     if nasa_img and not is_vid:
         return nasa_img
 
-    # 4. Bing HD Search Fallback
     try:
-        encoded = urllib.parse.quote(f"{query} cinematic photography")
+        encoded = urllib.parse.quote(f"{query} realistic photography")
         b_url = f"https://www.bing.com/images/async?q={encoded}&first=1&count=15&adlt=off&qft=+filterui:imagesize-large"
         r = requests.get(b_url, headers=HEADERS, timeout=18)
         if r.status_code == 200:
@@ -852,7 +657,6 @@ def fetch_exact_scene_photo(query, filename, pref="pixabay"):
     except Exception:
         pass
 
-    # Fallback dark slate canvas
     img = Image.new("RGB", (1080, 1920), (14, 19, 32))
     img.save(filename, "JPEG", quality=92)
     return filename
@@ -875,51 +679,51 @@ def verify_and_grade_image(filepath):
 
 
 # =====================================================================
-# CINEMATIC SOUND EFFECTS & AUDIO DUCKING ENGINE
+# PURE-PYTHON CRASH-PROOF CINEMATIC SFX & BGM SYNTHESIZER
 # =====================================================================
+def write_synthesized_wav(filename, duration_sec, sample_fn, sample_rate=44100):
+    """Writes a 16-bit mono WAV file using pure Python math (zero external filter errors)."""
+    num_samples = int(duration_sec * sample_rate)
+    with wave.open(filename, "w") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(sample_rate)
+        frames = bytearray()
+        for i in range(num_samples):
+            t = i / float(sample_rate)
+            val = max(-1.0, min(1.0, sample_fn(t, duration_sec)))
+            frames.extend(struct.pack("<h", int(val * 32767.0)))
+        wf.writeframes(frames)
+    return filename
+
+
 def generate_cinematic_sfx_library():
-    """Generates studio-quality documentary transition SFX using FFmpeg lavfi synthesis (100% reliable)."""
+    """Generates studio-clean documentary SFX in pure Python."""
     sfx_files = {}
 
-    # 1. Deep Documentary Sub-Bass Impact ("boom")
-    boom_file = "sfx_boom.wav"
-    subprocess.run([
-        "ffmpeg", "-y", "-f", "lavfi",
-        "-i", "aevalsrc='0.7*exp(-3.5*t)*sin(2*PI*(95*exp(-1.8*t)+32)*t)+0.25*exp(-8*t)*(random(0)-0.5)':s=44100:d=1.4",
-        "-af", "lowpass=f=180,afade=t=out:st=0.9:d=0.5",
-        boom_file
-    ], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    sfx_files["boom"] = boom_file
+    # 1. Sub-Bass Impact Boom
+    sfx_files["boom"] = write_synthesized_wav(
+        "sfx_boom.wav", 1.2,
+        lambda t, d: 0.75 * math.exp(-3.2 * t) * math.sin(2.0 * math.pi * (85.0 * math.exp(-1.5 * t) + 34.0) * t)
+    )
 
-    # 2. Cinematic Transition Whoosh ("whoosh")
-    whoosh_file = "sfx_whoosh.wav"
-    subprocess.run([
-        "ffmpeg", "-y", "-f", "lavfi",
-        "-i", "anoisesrc=d=0.9:c=pink:r=44100:a=0.5",
-        "-af", "bandpass=f=650:width_type=h:w=400,afade=t=in:st=0:d=0.35,afade=t=out:st=0.35:d=0.55",
-        whoosh_file
-    ], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    sfx_files["whoosh"] = whoosh_file
+    # 2. Transition Whoosh
+    sfx_files["whoosh"] = write_synthesized_wav(
+        "sfx_whoosh.wav", 0.85,
+        lambda t, d: 0.55 * math.sin(math.pi * (t / d)) * math.sin(2.0 * math.pi * (180.0 + 320.0 * (t / d)) * t)
+    )
 
-    # 3. Documentary Tension Riser ("riser")
-    riser_file = "sfx_riser.wav"
-    subprocess.run([
-        "ffmpeg", "-y", "-f", "lavfi",
-        "-i", "aevalsrc='0.45*(t/1.2)*sin(2*PI*(110+160*t*t)*t)':s=44100:d=1.2",
-        "-af", "lowpass=f=900,afade=t=in:st=0:d=0.6,afade=t=out:st=0.95:d=0.25",
-        riser_file
-    ], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    sfx_files["riser"] = riser_file
+    # 3. Documentary Riser
+    sfx_files["riser"] = write_synthesized_wav(
+        "sfx_riser.wav", 1.1,
+        lambda t, d: 0.5 * (t / d) * math.sin(2.0 * math.pi * (110.0 + 180.0 * (t / d) ** 2) * t)
+    )
 
-    # 4. High-Tech Telemetry Pulse ("pulse")
-    pulse_file = "sfx_pulse.wav"
-    subprocess.run([
-        "ffmpeg", "-y", "-f", "lavfi",
-        "-i", "aevalsrc='0.4*exp(-6*t)*sin(2*PI*440*t)+0.3*exp(-4*t)*sin(2*PI*220*t)':s=44100:d=0.8",
-        "-af", "afade=t=out:st=0.4:d=0.4",
-        pulse_file
-    ], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    sfx_files["pulse"] = pulse_file
+    # 4. Telemetry Science Pulse
+    sfx_files["pulse"] = write_synthesized_wav(
+        "sfx_pulse.wav", 0.75,
+        lambda t, d: 0.45 * math.exp(-5.0 * t) * (math.sin(2.0 * math.pi * 440.0 * t) + 0.5 * math.sin(2.0 * math.pi * 220.0 * t))
+    )
 
     return sfx_files
 
@@ -930,18 +734,16 @@ async def synthesize_scene_voice(urdu_text, index, sfx_path=None):
     voice_clean = f"voice_clean_{index}.m4a"
     mastered_audio = f"voice_{index}.m4a"
 
-    # Documentary pacing: +1% rate, deep -3Hz broadcast pitch
-    communicate = edge_tts.Communicate(urdu_text, voice="ur-PK-AsadNeural", rate="+1%", pitch="-3Hz")
+    communicate = edge_tts.Communicate(urdu_text, voice="ur-PK-AsadNeural", rate="+2%", pitch="-3Hz")
     await communicate.save(raw_audio)
 
-    # Broadcast vocal EQ + 0.35s breath pad for documentary pacing
     af_chain = (
         "silenceremove=start_periods=1:start_silence=0.05:start_threshold=-45dB,"
         "highpass=f=70,"
         "bass=g=4.5:f=105,"
         "treble=g=3.0:f=4800,"
         "acompressor=threshold=-16dB:ratio=3.2:attack=5:release=70:makeup=3.5dB,"
-        "apad=pad_dur=0.35"
+        "apad=pad_dur=0.30"
     )
     subprocess.run([
         "ffmpeg", "-y", "-i", raw_audio,
@@ -950,7 +752,6 @@ async def synthesize_scene_voice(urdu_text, index, sfx_path=None):
         voice_clean
     ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # Layer subtle scene-opening SFX under the voiceover
     if sfx_path and os.path.exists(sfx_path):
         try:
             subprocess.run([
@@ -975,7 +776,6 @@ def create_burned_hud_overlay(caption_text, badge_text, act_text, scene_idx, tot
     overlay = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Top and Bottom Vignette Gradients
     for y in range(320):
         alpha = int(185 * (1 - y / 320))
         draw.line([(0, y), (1080, y)], fill=(0, 0, 0, alpha))
@@ -992,7 +792,6 @@ def create_burned_hud_overlay(caption_text, badge_text, act_text, scene_idx, tot
         badge_font = ImageFont.load_default()
         cap_font = ImageFont.load_default()
 
-    # Top Category Pill
     bw, bh = 660, 78
     bx, by = (1080 - bw) // 2, 78
     draw.rounded_rectangle([bx, by, bx + bw, by + bh], radius=39, fill=(210, 25, 25, 245), outline=(255, 255, 255, 240), width=4)
@@ -1001,14 +800,12 @@ def create_burned_hud_overlay(caption_text, badge_text, act_text, scene_idx, tot
     b_tw, b_th = b_bbox[2] - b_bbox[0], b_bbox[3] - b_bbox[1]
     draw.text((bx + (bw - b_tw) // 2, by + (bh - b_th) // 2 - 4), b_text, font=badge_font, fill=(255, 255, 255, 255))
 
-    # Secondary Documentary Act Tag
     act_str = f"🎬 {act_text.upper()}  •  SCENE {scene_idx + 1}/{total_scenes}"
     a_bbox = draw.textbbox((0, 0), act_str, font=act_font)
     a_tw = a_bbox[2] - a_bbox[0]
     draw.rounded_rectangle([(1080 - a_tw) // 2 - 24, 172, (1080 + a_tw) // 2 + 24, 218], radius=14, fill=(15, 23, 42, 220), outline=(0, 230, 255, 190), width=2)
     draw.text(((1080 - a_tw) // 2, 180), act_str, font=act_font, fill=(0, 240, 255, 255))
 
-    # Lower-Third Subtitle Box
     lines = textwrap.wrap(caption_text.upper(), width=16)
     if not lines:
         lines = ["ASLI DOCUMENTARY!"]
@@ -1035,7 +832,6 @@ def create_burned_hud_overlay(caption_text, badge_text, act_text, scene_idx, tot
             draw.text((tx + dx, ty + dy), line, font=cap_font, fill=(0, 0, 0, 255))
         draw.text((tx, ty), line, font=cap_font, fill=fill_col)
 
-    # Documentary Timeline Progress Bar
     progress_fraction = (scene_idx + (0.5 if part_num == 1 else 1.0)) / total_scenes
     prog_w = int(980 * progress_fraction)
     draw.rounded_rectangle([50, 1835, 1030, 1855], radius=10, fill=(255, 255, 255, 75))
@@ -1069,7 +865,7 @@ def prepare_visual_subclip(media_path, is_video, overlay_path, duration, sub_idx
             "-loop", "1", "-t", str(duration), "-i", overlay_path,
             "-filter_complex", vf,
             "-map", "[v]", "-r", "24", "-an",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
             out_clip
         ]
     else:
@@ -1085,7 +881,7 @@ def prepare_visual_subclip(media_path, is_video, overlay_path, duration, sub_idx
             "-loop", "1", "-t", str(duration), "-i", overlay_path,
             "-filter_complex", vf,
             "-map", "[v]", "-r", "24", "-an",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
             out_clip
         ]
 
@@ -1102,7 +898,7 @@ def prepare_visual_subclip(media_path, is_video, overlay_path, duration, sub_idx
             "-loop", "1", "-t", str(duration), "-i", overlay_path,
             "-filter_complex", safe_vf,
             "-map", "[v]", "-r", "24", "-an",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+            "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
             out_clip
         ]
         subprocess.run(safe_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -1123,7 +919,6 @@ def render_two_cut_scene(scene, idx, total_scenes, badge, sfx_library):
     pref = scene.get("media_source_pref", "pixabay")
     act_text = scene.get("act", "DOCUMENTARY")
 
-    # Cut 1: Video (NASA / GIPHY / Pixabay) or Photo Fallback
     vid_file = fetch_contextual_stock_video(v_q, f"stock_vid_{idx}.mp4", pref=pref) if v_q else None
     if vid_file:
         media1, is_vid1 = vid_file, True
@@ -1131,10 +926,9 @@ def render_two_cut_scene(scene, idx, total_scenes, badge, sfx_library):
         media1 = fetch_exact_scene_photo(q1, f"photo_{idx}_1.jpg", pref=pref)
         is_vid1 = False
 
-    # Cut 2: Alternate between GIPHY dynamic loop (every 3rd scene) and HD Photo (NASA/Pixabay)
     media2 = None
     is_vid2 = False
-    if idx % 3 == 1 and GIPHY_API_KEY:
+    if idx % 2 == 1 and GIPHY_API_KEY:
         g_clip = fetch_giphy_mp4(q2, f"giphy_{idx}_2.mp4")
         if g_clip:
             media2, is_vid2 = g_clip, True
@@ -1161,12 +955,11 @@ def render_two_cut_scene(scene, idx, total_scenes, badge, sfx_library):
         "-f", "concat", "-safe", "0", "-i", list_file,
         "-i", audio_path,
         "-map", "0:v", "-map", "1:a",
-        "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "22",
         "-c:a", "copy", "-shortest",
         scene_out
     ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # Clean intermediate sub-files to save runner disk space
     for tmp in [sub1, sub2, ov1, ov2]:
         if os.path.exists(tmp):
             try:
@@ -1177,8 +970,8 @@ def render_two_cut_scene(scene, idx, total_scenes, badge, sfx_library):
     return scene_out
 
 
-def build_cinematic_bgm_track(target_duration):
-    """Fetches dramatic documentary background music or synthesizes a multi-layered Hans-Zimmer style ambient drone."""
+def prepare_bgm_file():
+    """Downloads dramatic ambient drone or synthesizes a pure-Python 12-second loopable documentary score."""
     bgm_urls = [
         "https://actions.google.com/sounds/v1/ambiences/cyberpunk_drone.ogg",
         "https://actions.google.com/sounds/v1/science_fiction/sci_fi_drone.ogg"
@@ -1187,31 +980,21 @@ def build_cinematic_bgm_track(target_duration):
         try:
             r = requests.get(url, headers=HEADERS, timeout=20)
             if r.status_code == 200 and len(r.content) > 20000:
-                with open("raw_bgm.ogg", "wb") as f:
+                with open("bgm_loop.ogg", "wb") as f:
                     f.write(r.content)
-                # Enhance with a rhythmic documentary heartbeat pulse
-                subprocess.run([
-                    "ffmpeg", "-y",
-                    "-stream_loop", "-1", "-t", str(target_duration), "-i", "raw_bgm.ogg",
-                    "-f", "lavfi", "-t", str(target_duration),
-                    "-i", "aevalsrc='0.18*sin(2*PI*55*t)*exp(-4*mod(t,1.5))':s=44100",
-                    "-filter_complex", "[0:a]volume=0.85[a0];[1:a]lowpass=f=140[a1];[a0][a1]amix=inputs=2:duration=first[out]",
-                    "-map", "[out]", "-c:a", "aac", "-b:a", "160k",
-                    "master_bgm.m4a"
-                ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return "master_bgm.m4a"
+                return "bgm_loop.ogg"
         except Exception:
             continue
 
-    # Pure FFmpeg Synthesized Documentary Score Fallback
-    subprocess.run([
-        "ffmpeg", "-y", "-f", "lavfi", "-t", str(target_duration),
-        "-i", "aevalsrc='0.25*sin(2*PI*55*t)+0.15*sin(2*PI*82.4*t)+0.12*sin(2*PI*110*t)*sin(2*PI*0.2*t)':s=44100",
-        "-af", "lowpass=f=320",
-        "-c:a", "aac", "-b:a", "160k",
-        "master_bgm.m4a"
-    ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return "master_bgm.m4a"
+    # Pure-Python synthesized 10-second loopable ambient documentary score
+    return write_synthesized_wav(
+        "bgm_loop.wav", 10.0,
+        lambda t, d: (
+            0.25 * math.sin(2.0 * math.pi * 55.0 * t)
+            + 0.15 * math.sin(2.0 * math.pi * 82.4 * t)
+            + 0.12 * math.sin(2.0 * math.pi * 110.0 * t) * (0.6 + 0.4 * math.sin(2.0 * math.pi * 0.2 * t))
+        )
+    )
 
 
 def build_full_video(script_data):
@@ -1221,7 +1004,7 @@ def build_full_video(script_data):
     scene_files = []
 
     for idx, scene in enumerate(scenes):
-        print(f"🎬 Rendering Scene {idx+1}/{len(scenes)} [{scene.get('act', 'DOC')}]: '{scene['caption_part1']} | {scene['caption_part2']}'")
+        print(f"🎬 Scene {idx+1}/{len(scenes)} [{scene.get('act', 'DOC')}]: '{scene['caption_part1']} | {scene['caption_part2']}'")
         s_file = render_two_cut_scene(scene, idx, len(scenes), badge, sfx_library)
         scene_files.append(s_file)
 
@@ -1241,33 +1024,25 @@ def build_full_video(script_data):
     total_vid_dur = get_audio_duration(raw_output)
     print(f"⏱️ Total Documentary Runtime: {round(total_vid_dur / 60.0, 2)} minutes ({int(total_vid_dur)} seconds)")
 
-    print("🎵 Mixing Documentary Score with Sidechain Audio Ducking & Bitrate Optimization...")
+    print("🎵 Mixing Cinematic Documentary Score...")
     final_output = "final_reel.mp4"
     try:
-        bgm_file = build_cinematic_bgm_track(total_vid_dur + 5)
-        # Sidechain ducking: BGM drops smoothly when narrator speaks, swells in pauses.
-        # Video re-encoded with maxrate=1850k so a 5-minute 1080p video stays ~40-44MB (<50MB Telegram limit!)
-        duck_filter = (
-            "[0:a]asplit=2[vo][sc];"
-            "[1:a]volume=0.22[bgm_raw];"
-            "[bgm_raw][sc]sidechaincompress=threshold=0.03:ratio=5:attack=15:release=350[bgm_ducked];"
-            "[vo][bgm_ducked]amix=inputs=2:duration=first:dropout_transition=2[a]"
-        )
+        bgm_loop = prepare_bgm_file()
         mix_cmd = [
             "ffmpeg", "-y",
             "-i", raw_output,
-            "-i", bgm_file,
-            "-filter_complex", duck_filter,
+            "-stream_loop", "-1", "-i", bgm_loop,
+            "-filter_complex", "[1:a]volume=0.11[bgm];[0:a][bgm]amix=inputs=2:duration=first:dropout_transition=2[a]",
             "-map", "0:v", "-map", "[a]",
-            "-c:v", "libx264", "-preset", "fast", "-crf", "24",
-            "-maxrate", "1850k", "-bufsize", "3700k",
-            "-c:a", "aac", "-b:a", "160k",
+            "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+            "-maxrate", "2500k", "-bufsize", "5000k",
+            "-c:a", "aac", "-b:a", "192k",
             final_output
         ]
         subprocess.run(mix_cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return final_output
     except Exception as e:
-        print(f"Sidechain BGM mix fallback: {e}")
+        print(f"BGM mix fallback note: {e}")
 
     subprocess.run(["cp", raw_output, final_output], check=False)
     return final_output
@@ -1312,10 +1087,10 @@ def upload_to_facebook(video_path, script_data):
         return False, "FB Secrets missing"
 
     page_id, page_token = resolve_fb_page_credentials()
-    print(f"🚀 Uploading 5-Minute Documentary to Facebook Page ID: {page_id}...")
+    print(f"🚀 Uploading 2-Minute Documentary to Facebook Page ID: {page_id}...")
     url = f"https://graph-video.facebook.com/v20.0/{page_id}/videos"
 
-    title = script_data.get("title", "Logic Aur Dhoka - 5 Min Science Documentary")
+    title = script_data.get("title", "Logic Aur Dhoka - 2 Min Science Documentary")
     tagline = script_data.get("tagline", "Physics is dunya ka Source Code hai!")
     description = script_data.get("description", "Rozana aisi real-world science documentaries dekhne ke liye Logic Aur Dhoka ko follow karein!")
     hashtags = script_data.get("hashtags", "#LogicAurDhoka #PhysicsLogic #NASAScience #UrduDocumentary")
@@ -1336,7 +1111,7 @@ def upload_to_facebook(video_path, script_data):
                 "description": full_post_description
             }
             files = {"source": vf}
-            resp = requests.post(url, data=payload, files=files, timeout=480)
+            resp = requests.post(url, data=payload, files=files, timeout=360)
             print("Facebook API Status:", resp.status_code, resp.text)
             if resp.status_code == 200 and "id" in resp.json():
                 vid_id = resp.json()["id"]
@@ -1353,7 +1128,7 @@ def send_to_telegram(video_path, script_data, fb_ok, fb_msg):
         print("⚠️ Telegram credentials missing.")
         return
 
-    print("📲 Uploading 5-Min Documentary & Status Report to Telegram...")
+    print("📲 Uploading 2-Min Documentary & Status Report to Telegram...")
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendVideo"
     fb_status_line = f"✅ Facebook Auto-Post: {fb_msg}" if fb_ok else f"⚠️ Facebook Auto-Post: {fb_msg}"
 
@@ -1371,19 +1146,18 @@ def send_to_telegram(video_path, script_data, fb_ok, fb_msg):
             url,
             data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "supports_streaming": True},
             files={"video": vf},
-            timeout=300
+            timeout=240
         )
         print("Telegram Upload Status:", resp.status_code, resp.text[:200])
 
     if resp.status_code != 200:
-        print("Retrying Telegram upload as document fallback...")
-        doc_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+        print("Retrying Telegram upload without caption...")
         with open(video_path, "rb") as vf:
             requests.post(
-                doc_url,
-                data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption[:1000]},
-                files={"document": vf},
-                timeout=300
+                url,
+                data={"chat_id": TELEGRAM_CHAT_ID},
+                files={"video": vf},
+                timeout=240
             )
 
 
